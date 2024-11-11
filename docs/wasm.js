@@ -1,11 +1,12 @@
 import { WasiPreview1 } from 'easywasi'
 
 export default async function setupWasm(url, options = {}) {
-  const { args = [], env = {}, runStart = true, fs } = options
+  const { args = [], env = {}, runStart = true, fs, ...wo } = options
   const wasi_snapshot_preview1 = new WasiPreview1({
     fs,
     args,
-    env
+    env,
+    ...wo
   })
   const {
     instance: { exports }
