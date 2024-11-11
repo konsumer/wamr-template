@@ -1,5 +1,6 @@
 #include "wasm_c_api.h"
 #include "wasm_export.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -30,12 +31,16 @@ static int millis() {
 }
 
 // host string param
-static void test_string_in(wasm_exec_env_t exec_env, char *i) {}
+static void test_string_in(wasm_exec_env_t exec_env, char *i) {
+  printf("host: string from cart: %s\n", i);
+}
 
 // host string return
-static char *test_string_out(wasm_exec_env_t exec_env) {
+static void test_string_out(wasm_exec_env_t exec_env, unsigned int outPtr) {
   char *o = "ok";
-  return o;
+  unsigned char *bufferOut =
+      wasm_runtime_addr_app_to_native(module_inst, (uint64_t)outPtr);
+  memcpy(bufferOut, o, strlen(o));
 }
 
 // host bytes param (with length)
@@ -43,24 +48,40 @@ static void test_bytes_in(wasm_exec_env_t exec_env, unsigned int *i,
                           unsigned int iLen) {}
 
 // host bytes return (with length)
-static void test_bytes_out(wasm_exec_env_t exec_env, unsigned int *len) {}
+static void test_bytes_out(wasm_exec_env_t exec_env, unsigned int outPtr,
+                           unsigned int lenPtr) {
+  unsigned char *bufferOut =
+      wasm_runtime_addr_app_to_native(module_inst, (uint64_t)outPtr);
+  unsigned char *lenOut =
+      wasm_runtime_addr_app_to_native(module_inst, (uint64_t)lenPtr);
+
+  unsigned int len = 4;
+  unsigned char bytes[4] = {1, 2, 3, 4};
+  memcpy(bufferOut, bytes, len);
+  memcpy(lenOut, &len, sizeof(len));
+}
 
 // host struct param (using length to make copy work)
 static void test_struct_in(wasm_exec_env_t exec_env, Point *i,
-                           unsigned int iLen) {}
+                           unsigned int iLen) {
+  printf("host: cart sent point %ux%u\n", i->x, i->y);
+}
 
 // host struct return (returns length)
-static unsigned int test_struct_out(wasm_exec_env_t exec_env, Point *i) {
-  return sizeof(Point);
+static void test_struct_out(wasm_exec_env_t exec_env, unsigned int o) {
+  unsigned char *bufferOut =
+      wasm_runtime_addr_app_to_native(module_inst, (uint64_t)o);
+  Point r = {100, 200};
+  memcpy(bufferOut, &r, sizeof(r));
 }
 
 static NativeSymbol native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(test_string_in, "($)"),
-    EXPORT_WASM_API_WITH_SIG(test_string_out, "()$"),
+    EXPORT_WASM_API_WITH_SIG(test_string_out, "(i)"),
     EXPORT_WASM_API_WITH_SIG(test_bytes_in, "(*~)"),
-    EXPORT_WASM_API_WITH_SIG(test_bytes_out, "(*)i"),
+    EXPORT_WASM_API_WITH_SIG(test_bytes_out, "(ii)"),
     EXPORT_WASM_API_WITH_SIG(test_struct_in, "(*~)"),
-    EXPORT_WASM_API_WITH_SIG(test_struct_out, "(*)i")};
+    EXPORT_WASM_API_WITH_SIG(test_struct_out, "(i)")};
 
 int wasm_host_load(char *filename) {
   unsigned char *wasmBytes;

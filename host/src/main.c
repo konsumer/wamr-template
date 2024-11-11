@@ -1,7 +1,6 @@
 #include "host.h"
 
 int main(int argc, char *argv[]) {
-  printf("hello from host\n");
   wasm_host_load("build/cart/main.wasm");
 
   if (cart_update != NULL) {
