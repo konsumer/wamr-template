@@ -39,5 +39,5 @@ unsigned char *test_bytes_out(unsigned int *len);
 void test_struct_in(Point *i);
 
 // return struct from host
-Point *test_struct_out() ;
+Point *test_struct_out();
 ```
