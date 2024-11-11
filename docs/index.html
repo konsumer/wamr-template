@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>null0</title>
+    <link rel="icon" type="image/x-icon" href="https://avatars.githubusercontent.com/u/83857" />
+  </head>
+  <body></body>
+  <script type="importmap">
+    {
+      "imports": {
+        "easywasi": "https://esm.sh/easywasi",
+        "@zenfs/core": "https://esm.sh/@zenfs/core",
+        "@zenfs/dom": "https://esm.sh/@zenfs/dom",
+        "@zenfs/zip": "https://esm.sh/@zenfs/zip"
+      }
+    }
+  </script>
+  <script type="module">
+    import setupWasm from './wasm.js'
+    const cart = await setupWasm('main.wasm')
+    console.log(cart)
+  </script>
+</html>

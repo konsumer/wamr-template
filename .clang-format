@@ -1,0 +1,6 @@
+BasedOnStyle: Google
+IndentWidth: 2
+AlignAfterOpenBracket: BlockIndent
+BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
+PenaltyBreakBeforeFirstCallParameter=20
