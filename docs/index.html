@@ -18,7 +18,7 @@
     import { fs } from '@zenfs/core'
     import setupWasm from './wasm.js'
 
-    function strLen(address) {
+    function strLen(address, mem) {
       let o = 0
       while (o < (1024 * 1024)) {
         if (mem[address + o++] === 0) {
@@ -28,11 +28,11 @@
       return o
     }
 
-    function getString(address){
-      return d.decode(mem.slice(address, address +  strLen(address)))
+    function getString(address, mem){
+      return d.decode(mem.slice(address, address +  strLen(address, mem)))
     }
 
-    function setString(address, s){
+    function setString(address, s, mem){
       mem.set(e.encode(s), address)
       mem[s.length] = 0
     }
@@ -40,11 +40,13 @@
     const imports = {
       null0: {
         test_string_in(iPtr){
-          console.log(`host: received from cart: ${getString(iPtr)}`)
+          const mem = new Uint8Array(cart.exports.memory.buffer)
+          console.log(`host: received from cart: ${getString(iPtr, mem)}`)
         },
 
         test_string_out(oPtr){
-          setString(oPtr, "hello")
+          const mem = new Uint8Array(cart.exports.memory.buffer)
+          setString(oPtr, "hello", mem)
         },
 
         test_bytes_in(iPtr, iLen){
@@ -80,7 +82,6 @@
 
     const d = new TextDecoder()
     const e = new TextEncoder()
-    const mem = new Uint8Array(cart.exports.memory.buffer)
 
     if (cart.exports._start) {
       cart.exports._start()
