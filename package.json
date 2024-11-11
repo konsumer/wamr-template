@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "start": "npx -y live-server docs",
+    "build": "cmake -B build && cmake --build build"
+  }
+}
