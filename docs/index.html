@@ -17,7 +17,83 @@
   <script type="module">
     import { fs } from '@zenfs/core'
     import setupWasm from './wasm.js'
-    const cart = await setupWasm('main.wasm', { fs })
+
+    function strLen(address) {
+      let o = 0
+      while (o < (1024 * 1024)) {
+        if (mem[address + o++] === 0) {
+          break
+        }
+      }
+      return o
+    }
+
+    function getString(address){
+      return d.decode(mem.slice(address, address +  strLen(address)))
+    }
+
+    function setString(address, s){
+      mem.set(e.encode(s), address)
+      mem[s.length] = 0
+    }
+
+    const imports = {
+      null0: {
+        test_string_in(iPtr){
+          console.log(`host: received from cart: ${getString(iPtr)}`)
+        },
+
+        test_string_out(oPtr){
+          setString(oPtr, "hello")
+        },
+
+        test_bytes_in(iPtr, iLen){
+          console.log(`host: received from cart:`, [...new Uint8Array(cart.exports.memory.buffer.slice(iPtr, iPtr+iLen))])
+        },
+
+        test_bytes_out(oPtr, oLenPtr){
+          mem.set([1,2,3,4], oPtr)
+          const v = new DataView(cart.exports.memory.buffer)
+          v.setUint32(oLenPtr, 4, true)
+        },
+
+        test_struct_in(iPtr, iLen){
+          const v = new DataView(cart.exports.memory.buffer)
+          const p = {
+            x: v.getUint32(iPtr, true),
+            y: v.getUint32(iPtr+4, true)
+          }
+          console.log('host: got point', p)
+        },
+
+        test_struct_out(oPtr){
+          const v = new DataView(cart.exports.memory.buffer)
+          const p = {x: 100, y: 300}
+          v.setUint32(oPtr, p.x, true)
+          v.setUint32(oPtr+4, p.y, true)
+        }
+      }
+    }
+
+    const cart = await setupWasm('main.wasm', { fs, imports, runStart: false })
     console.log(cart)
+
+    const d = new TextDecoder()
+    const e = new TextEncoder()
+    const mem = new Uint8Array(cart.exports.memory.buffer)
+
+    if (cart.exports._start) {
+      cart.exports._start()
+    }
+    if (cart.exports.load) {
+      cart.exports.load()
+    }
+    if (cart.exports.update) {
+      const u = () => {
+        cart.exports.update(Date.now())
+        requestAnimationFrame(u)
+      }
+      u()
+    }
   </script>
 </html>
