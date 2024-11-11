@@ -1,3 +1,5 @@
+This contains a native and web WASI host.
+
 ## notes
 
 - [embed_wamr](https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/embed_wamr.md)
