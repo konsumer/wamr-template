@@ -15,8 +15,9 @@
     }
   </script>
   <script type="module">
+    import { fs } from '@zenfs/core'
     import setupWasm from './wasm.js'
-    const cart = await setupWasm('main.wasm')
+    const cart = await setupWasm('main.wasm', { fs })
     console.log(cart)
   </script>
 </html>

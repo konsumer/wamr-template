@@ -1,8 +1,7 @@
 import { WasiPreview1 } from 'easywasi'
-import { fs } from '@zenfs/core'
 
 export default async function setupWasm(url, options = {}) {
-  const { args = [], env = {}, runStart = true } = options
+  const { args = [], env = {}, runStart = true, fs } = options
   const wasi_snapshot_preview1 = new WasiPreview1({
     fs,
     args,
