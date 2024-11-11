@@ -1,6 +1,6 @@
-#include "null0.h"
 #include <stdio.h>
 #include <string.h>
+#include "null0.h"
 
 void update(int time) {}
 
@@ -14,14 +14,13 @@ void load() {
   test_bytes_in(i, 4);
 
   unsigned int len = 0;
-  unsigned char *bytes = test_bytes_out(&len);
-  printf("cart: test_bytes_out (%u): %u %u %u %u\n", len, bytes[0], bytes[1],
-         bytes[2], bytes[3]);
+  unsigned char* bytes = test_bytes_out(&len);
+  printf("cart: test_bytes_out (%u): %u %u %u %u\n", len, bytes[0], bytes[1], bytes[2], bytes[3]);
 
   Point p = {100, 200};
   test_struct_in(&p);
 
-  Point *p2 = test_struct_out();
+  Point* p2 = test_struct_out();
   printf("cart: host sent point %ux%u\n", p2->x, p2->y);
 }
 
