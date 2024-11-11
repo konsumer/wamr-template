@@ -54,6 +54,7 @@
         },
 
         test_bytes_out(oPtr, oLenPtr){
+          const mem = new Uint8Array(cart.exports.memory.buffer)
           mem.set([1,2,3,4], oPtr)
           const v = new DataView(cart.exports.memory.buffer)
           v.setUint32(oLenPtr, 4, true)
