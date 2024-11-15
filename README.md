@@ -1,23 +1,30 @@
-This contains a native and web WASI host.
+This contains a native and web WASI host. The idea is that you are making something like [null0](https://giuthub.com/natnullgames/null0) where you have a host written in C, and "carts" written in whatever the user wants.
 
-## notes
+I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnullgames/null0) quickjly, but you can use it for whatever you like. It uses WASI `preview1` so it will work with any wasm-language that support that.
 
-- [embed_wamr](https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/embed_wamr.md)
-- [export_native_api](https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/export_native_api.md)
+## features
+
+- Minimal web-host, that runs carts & incldues WASI and any functions you exported from host
+- Minimal wamr native host that just runs the wasm
+- Build hosts and cart easily (with cmake)
+- Test API to show how to pass more advanced values back & forth
+- cart filesystem, so you can interact with the cart's files from the host
+- (planned) Codegen to use a YAML file to describe your API (and generate the host & C cart-header)
 
 ## building
 
 ```
 # native host & cart
-cmake -B build
-cmake --build build
+npm run build
 
 # emscripten host
-emcmake cmake -B wbuild
-cmake --build wbuild
+npm run build:web
+
+# run a server for web-host
+npm start
 ```
 
-## test api
+## Test API
 
 There is a tester API that looks like this:
 
@@ -46,4 +53,11 @@ void test_struct_in(TestPoint* point);
 TestPoint* test_struct_out();
 ```
 
-Web-host uses automatic exports (anything you expose will be exposed to cart.)
+It's already been setup in cart & hosts, so you can get an idea of how you will need to expose your own API.
+
+## notes
+
+These might help with wamr:
+
+- [embed_wamr](https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/embed_wamr.md)
+- [export_native_api](https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/export_native_api.md)

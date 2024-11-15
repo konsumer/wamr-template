@@ -14,7 +14,11 @@ EM_JS(void, wasm_host_update, (), {
 });
 
 EM_JS(void, _wasm_host_copy_from_cart, (unsigned int cartPtr, void* hostPtr, unsigned int size), {
-  Module.HEAPU8.set(Module.cart.exports.memory.buffer.slice(cartPtr, cartPtr + size), hostPtr);
+  let i = 0;
+  const mem = new Uint8Array(Module.cart.exports.memory.buffer.slice(cartPtr, cartPtr+size));
+  for (i=0;i<size;i++) {
+    Module.HEAPU8[hostPtr + i] = mem[i]
+  }
 });
 
 // copy a pointer from cart to host
@@ -27,8 +31,9 @@ void* copy_from_cart(unsigned int cartPtr, unsigned int size) {
 EM_JS(int, cart_strlen, (unsigned int cartPtr), {
   const MAX_STR_LEN=1024;
   let len=0;
+  const mem = new Uint8Array(Module.cart.exports.memory.buffer.slice(cartPtr, cartPtr + MAX_STR_LEN));
   for (len=0;len<MAX_STR_LEN;len++) {
-    if (Module.HEAPU8[cartPtr + len] === 0) {
+    if (mem[len] === 0) {
       break;
     }
   }

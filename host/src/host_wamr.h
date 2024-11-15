@@ -77,7 +77,7 @@ unsigned int test_struct_out(wasm_exec_env_t exec_env) {
 /*
 see this: https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/export_native_api.md
   - $ or * return-vals don't work, use i (and copy out values)
-  - * param is a pointer to i32 (since only 4 bytes are copied automatically) unless you can do *~, use i and copy the bytes yourself
+  - * param is a pointer to i32 (since only 4 bytes are copied automatically) unless you can do *~, use i and copy the bytes yourself.
   - use $ params, they work great
 */
 
