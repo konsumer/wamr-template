@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "npx -y live-server docs",
-    "build": "cmake -B build && cmake --build build"
+    "build": "cmake -B build && cmake --build build",
+    "build:web": "emcmake cmake -B wbuild && cmake --build wbuild"
   }
 }

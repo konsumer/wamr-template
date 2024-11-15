@@ -3,6 +3,18 @@
 #define NULL0_EXPORT(n) __attribute__((export_name(n)))
 #define NULL0_IMPORT(n) __attribute__((import_module("null0"), import_name(n)))
 
+// mem-management
+
+NULL0_EXPORT("malloc")
+void* _null0_malloc(size_t size) {
+  return malloc(size);
+}
+
+NULL0_EXPORT("free")
+void _null0_free(void* ptr) {
+  free(ptr);
+}
+
 //// Cart callbacks
 
 NULL0_EXPORT("update")
@@ -25,41 +37,28 @@ void load();
 typedef struct {
   unsigned int x;
   unsigned int y;
-} Point;
+} TestPoint;
 
-NULL0_IMPORT("test_string_in")  // ($)
-void test_string_in(char* i);
+// send a string to host
+NULL0_IMPORT("test_string_in")
+void test_string_in(char* str);
 
-NULL0_IMPORT("test_string_out")  // (i)
-void __test_string_out(char* o);
-char* test_string_out() {
-  // TODO: host should malloc using wasm_runtime_module_dup_data
-  char* o = malloc(1024);
-  __test_string_out(o);
-  return o;
-}
+// return a string from host
+NULL0_IMPORT("test_string_out")
+char* test_string_out();
 
-NULL0_IMPORT("test_bytes_in")  // (*~)
-void test_bytes_in(unsigned char* i, unsigned int iLen);
+// send some bytes to host
+NULL0_IMPORT("test_bytes_in")
+void test_bytes_in(unsigned char* bytes, unsigned int bytesLen);
 
-NULL0_IMPORT("test_bytes_out")  // (**)
-void __test_bytes_out(unsigned char* out, unsigned int* olen);
-unsigned char* test_bytes_out(unsigned int* len) {
-  unsigned char* out = malloc(1024);
-  __test_bytes_out(out, len);
-  return out;
-}
+// return some bytes from host
+NULL0_IMPORT("test_bytes_out")
+unsigned char* test_bytes_out(unsigned int* outLen);
 
-NULL0_IMPORT("test_struct_in")  // (*~)
-void __test_struct_in(Point* i, unsigned int len);
-void test_struct_in(Point* i) {
-  __test_struct_in(i, sizeof(Point));
-}
+// send struct to host
+NULL0_IMPORT("test_struct_in")
+void test_struct_in(TestPoint* point);
 
-NULL0_IMPORT("test_struct_out")  // (i)
-void __test_struct_out(Point* i);
-Point* test_struct_out() {
-  Point* out = {};
-  __test_struct_out(out);
-  return out;
-}
+// return struct from host
+NULL0_IMPORT("test_struct_out")
+TestPoint* test_struct_out();
