@@ -1,3 +1,5 @@
+// implement any shared host types & functiosn here
+
 #include <time.h>
 
 typedef struct {
@@ -5,6 +7,7 @@ typedef struct {
   unsigned int y;
 } TestPoint;
 
+// get current unix-time in ms
 static int null0_millis() {
   struct timespec now;
   timespec_get(&now, TIME_UTC);

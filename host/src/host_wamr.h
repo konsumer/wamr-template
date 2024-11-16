@@ -1,3 +1,5 @@
+// this is the wamr-only host
+
 #include <string.h>
 #include <stdlib.h>
 #include "wasm_c_api.h"

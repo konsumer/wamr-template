@@ -1,3 +1,5 @@
+// this is the emscripten-only host
+
 #include "emscripten.h"
 #include <stdint.h>
 #include <stdio.h>
