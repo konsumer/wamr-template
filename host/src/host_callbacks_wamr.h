@@ -1,10 +1,3 @@
-// this is the wamr-only host
-
-#include <string.h>
-#include <stdlib.h>
-#include "wasm_c_api.h"
-#include "wasm_export.h"
-
 static char global_heap_buf[512 * 1024];
 static wasm_val_t func_args[2];
 static wasm_function_inst_t cart_update = NULL;
@@ -16,65 +9,6 @@ static wasm_function_inst_t cart_keyDown = NULL;
 
 static wasm_exec_env_t exec_env;
 static wasm_module_t module;
-static wasm_module_inst_t module_inst;
-
-// copy a pointer from cart to host
-void* copy_from_cart(unsigned int cartPtr, unsigned int size) {
-  void* out = malloc(size);
-  void* cartHostPtr = wasm_runtime_addr_app_to_native(module_inst, (uint64_t)cartPtr);
-  memcpy(out, cartHostPtr, size);
-  return out;
-}
-
-// copy a pointer from host to cart
-unsigned int copy_to_cart(void* hostPtr, unsigned int size) {
-  return (unsigned int) wasm_runtime_module_dup_data(module_inst, (const char*)hostPtr, (uint64_t) size);
-}
-
-/// API
-
-// send a string to host
-// void test_string_in(char* str);
-void test_string_in(wasm_exec_env_t exec_env, char* str) {
-  printf("host: test_string_in - %s\n", str);
-}
-
-// return a string from host
-// char* test_string_out();
-unsigned int test_string_out(wasm_exec_env_t exec_env){
-  char* str = "hi!";
-  return copy_to_cart(str, strlen(str) + 1);
-}
-
-// send some bytes to host
-// void test_bytes_in(unsigned char* bytes, unsigned int bytesLen);
-void test_bytes_in(wasm_exec_env_t exec_env, unsigned char* bytes, unsigned int bytesLen) {
-  printf("host: test_bytes_in (%u) - %u %u %u %u\n", bytesLen, bytes[0], bytes[1], bytes[2], bytes[3]);
-}
-
-// return some bytes from host
-// unsigned char* test_bytes_out(unsigned int* outLen);
-unsigned int test_bytes_out(wasm_exec_env_t exec_env, unsigned int* outLen) {
-  *outLen = 4;
-  unsigned char bytes[] = {0,1,2,3};
-  return copy_to_cart(bytes, *outLen);
-}
-
-// send struct to host
-// void test_struct_in(TestPoint* point);
-void test_struct_in(wasm_exec_env_t exec_env,  unsigned int pointPntr) {
-  TestPoint* point = copy_from_cart(pointPntr, sizeof(TestPoint));
-  printf("host: test_struct_in - %ux%u\n", point->x, point->y);
-}
-
-// return struct from host
-// TestPoint* test_struct_out();
-unsigned int test_struct_out(wasm_exec_env_t exec_env) {
-  TestPoint point = {.x=200, .y=100};
-  return copy_to_cart(&point, sizeof(point));
-}
-
-///
 
 /*
 see this: https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/export_native_api.md
@@ -84,12 +18,12 @@ see this: https://github.com/bytecodealliance/wasm-micro-runtime/blob/main/doc/e
 */
 
 static NativeSymbol native_symbols[] = {
-  EXPORT_WASM_API_WITH_SIG(test_string_in, "($)"),
-  EXPORT_WASM_API_WITH_SIG(test_string_out, "()i"),
-  EXPORT_WASM_API_WITH_SIG(test_bytes_in, "(*~)"),
-  EXPORT_WASM_API_WITH_SIG(test_bytes_out, "(*)i"),
-  EXPORT_WASM_API_WITH_SIG(test_struct_in, "(i)"),
-  EXPORT_WASM_API_WITH_SIG(test_struct_out, "()i")
+  EXPORT_WASM_API_WITH_SIG(host_test_string_in, "($)"),
+  EXPORT_WASM_API_WITH_SIG(host_string_out, "()i"),
+  EXPORT_WASM_API_WITH_SIG(host_bytes_in, "(*~)"),
+  EXPORT_WASM_API_WITH_SIG(host_bytes_out, "(*)i"),
+  EXPORT_WASM_API_WITH_SIG(host_struct_in, "(i)"),
+  EXPORT_WASM_API_WITH_SIG(host_struct_out, "()i")
 };
 
 int wasm_host_load(char* filename) {

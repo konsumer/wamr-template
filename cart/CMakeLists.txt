@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.18)
 if(NOT WASI_SDK_PREFIX)
     set(WASI_SDK_PREFIX /opt/wasi-sdk)
 endif()
+
 set(CMAKE_SYSTEM_NAME WASI)
 set(CMAKE_SYSTEM_VERSION 1)
 set(CMAKE_SYSTEM_PROCESSOR wasm32)
@@ -27,7 +28,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
 
 add_executable(main src/main.c)
-add_custom_command(TARGET main POST_BUILD
-  COMMAND "${CMAKE_COMMAND}" -E copy
-     "$<TARGET_FILE:main>"
-     "${PROJECT_SOURCE_DIR}/docs/$<TARGET_FILE_NAME:main>")
+set_target_properties(main
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs/cart"
+)

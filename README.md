@@ -5,10 +5,10 @@ I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnul
 ## features
 
 - Minimal web-host, that runs carts & incldues WASI and any functions you exported from host
-- Minimal wamr native host that just runs the wasm
+- Minimal wamr native host that uses the same WASI to access the shared filesystem
 - Build hosts and cart easily (with cmake)
 - Test API to show how to pass more advanced values back & forth
-- cart filesystem, so you can interact with the cart's files from the host
+- shared filesystem that uses a zip-file
 - (planned) Codegen to use a YAML file to describe your API (and generate the host & C cart-header)
 
 ## building
