@@ -1,15 +1,11 @@
 // implement any shared host types & functiosn here
 
-#include <time.h>
+#pragma once
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
-typedef struct {
-  unsigned int x;
-  unsigned int y;
-} TestPoint;
+#include <time.h>
 
 // get current unix-time in ms
 static int null0_millis() {
@@ -18,17 +14,18 @@ static int null0_millis() {
   return ((unsigned int)now.tv_sec) * 1000 + ((unsigned int)now.tv_nsec) / 1000000;
 }
 
-// implement these memory-helpers for each host
+// HOST: implement these memory-helpers for each host
+
+// copy a host-pointer to cart, return cart-pointer
 unsigned int copy_to_cart(void* hostPtr, unsigned int size);
+
+// copy a cart-pointer to host, return host-pointer
 void* copy_from_cart(unsigned int cartPtr, unsigned int size);
+
+// get the strlen of a cart-pointer
 int cart_strlen(unsigned int cartPtr);
 
-// implement these callbacks for each host
-int wasm_host_load(char* filename);
-void wasm_host_unload();
-void wasm_host_update();
-
-// copy a pointer to a string from cart to host
+// copy a cart-pointer to a host-string
 char* copy_from_cart_string(unsigned int cartPtr) {
   int len = cart_strlen(cartPtr);
   char* out = NULL;
@@ -38,18 +35,44 @@ char* copy_from_cart_string(unsigned int cartPtr) {
   return out;
 }
 
+// copy a host-string to a cart-pointer
+unsigned int copy_to_cart_string(char* hostString) {
+
+}
+
+
+// HOST: implement these callbacks for each host
+
+// called when cart is loaded
+bool wasm_host_load();
+
+// called when cart is unloaded
+void wasm_host_unload();
+
+// called on each frame
+void wasm_host_update();
+
+
 #ifdef EMSCRIPTEN
   #include "emscripten.h"
   #include "host_mem_emscripten.h"
-  #define HOST_PARAMS(...) __VA_ARGS__
-  #define HOST_FUNCTION(ret_type, name, params, body) EMSCRIPTEN_KEEPALIVE ret_type host_#name(HOST_PARAMS params) body
+  #define HOST_FUNCTION(ret_type, name, params, ...) \
+    EMSCRIPTEN_KEEPALIVE ret_type host_##name params { __VA_ARGS__ }
 #else
   #include "wasm_c_api.h"
   #include "wasm_export.h"
   #include "host_mem_wamr.h"
-  #define HOST_PARAMS(...) __VA_ARGS__
-  #define HOST_FUNCTION(ret_type, name, params, body) ret_type host_#name(wasm_exec_env_t exec_env, HOST_PARAMS params) body
+  #define EXPAND_PARAMS(...) , ##__VA_ARGS__
+  #define HOST_FUNCTION(ret_type, name, params, ...) \
+    ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }
 #endif
+
+// test API
+
+typedef struct {
+  unsigned int x;
+  unsigned int y;
+} TestPoint;
 
 // send a string to host
 HOST_FUNCTION(void, test_string_in, (unsigned int sPtr), {

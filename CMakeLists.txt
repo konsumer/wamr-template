@@ -12,8 +12,6 @@ endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake")
 
-if (NOT EMSCRIPTEN)
-  add_subdirectory(cart)
-endif()
 
+add_subdirectory(cart)
 add_subdirectory(host)
