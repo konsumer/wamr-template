@@ -1,3 +1,4 @@
 .DS_Store
-build
-wbuild
+build/
+wbuild/
+node_modules/

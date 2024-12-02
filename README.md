@@ -5,26 +5,35 @@ I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnul
 ## features
 
 - Minimal web-host, that runs carts & incldues WASI and any functions you exported from host
-- Minimal wamr native host that just runs the wasm
+- Minimal wamr native host that uses the same WASI to access the shared filesystem
 - Build hosts and cart easily (with cmake)
 - Test API to show how to pass more advanced values back & forth
-- cart filesystem, so you can interact with the cart's files from the host
-- (planned) Codegen to use a YAML file to describe your API (and generate the host & C cart-header)
+- shared filesystem that uses a zip-file
+- (planned) Codegen to use a YAML or wit file to describe API (and generate the host & C cart-header)
 
 ## building
 
 ```
-# native host & cart
+# get build-tools and stuff
+npm i
+
+# native/emscripten host host & carts
 npm run build
 
-# emscripten host
+# just carts
+npm run build:carts
+
+# just emscripten host
 npm run build:web
 
-# run a server for web-host
+# just native host
+npm run build:native
+
+# run a live-reloading server for web (carts and host)
 npm start
 ```
 
-## Test API
+## host.h
 
 There is a tester API that looks like this:
 
@@ -53,7 +62,53 @@ void test_struct_in(TestPoint* point);
 TestPoint* test_struct_out();
 ```
 
-It's already been setup in cart & hosts, so you can get an idea of how you will need to expose your own API.
+## helpers
+
+In order to implement these, I also implemented some helpers you can use in your own thing:
+
+```c
+// copy a host-pointer to cart, return cart-pointer
+unsigned int copy_to_cart(void* hostPtr, unsigned int size);
+
+// copy a cart-pointer to host, return host-pointer
+void* copy_from_cart(unsigned int cartPtr, unsigned int size);
+
+// get the strlen of a cart-pointer
+int cart_strlen(unsigned int cartPtr);
+
+// copy a cart-pointer to a host-string
+char* copy_from_cart_string(unsigned int cartPtr);
+
+// copy a host-string to a cart-pointer
+unsigned int copy_to_cart_string(char* hostString);
+```
+
+There is also a macro for defining a host-function:
+
+```c
+HOST_FUNCTION(void, test_string_in, (unsigned int sPtr), {
+  char* str = copy_from_cart_string(sPtr);
+  printf("host: test_string_in - %s\n", str);
+})
+```
+
+This will expose a function that looks like this:
+
+```c
+void host_test_string_in(unsigned int sPtr);
+```
+
+cart.h also has some macros:
+
+```c
+// to export
+CART_FUNCTION("name_of_function_export")
+void* _your_function() {
+}
+
+// to import
+HOST_FUNCTION(void, test_string_in, (unsigned int sPtr))
+```
 
 ## notes
 
