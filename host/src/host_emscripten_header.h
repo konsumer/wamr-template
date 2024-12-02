@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "emscripten.h"
+
 // copy a host-pointer to cart, return cart-pointer
 EM_JS(unsigned int, copy_to_cart, (void* hostPtr, unsigned int size), {
   const outPtr = Module.cart.malloc(size);

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "cvector.h"
 
 // filesystem utils (used by host)
 #include "fs.h"

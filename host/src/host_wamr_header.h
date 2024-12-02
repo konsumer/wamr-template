@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "wasm_c_api.h"
+#include "wasm_export.h"
+
 // copy a host-pointer to cart, return cart-pointer
 unsigned int copy_to_cart(void* hostPtr, unsigned int size) {
   return 0;

@@ -40,17 +40,12 @@ void wasm_host_unload();
 void wasm_host_update();
 
 #ifdef EMSCRIPTEN
-  #include "emscripten.h"
-  #include "host_mem_emscripten.h"
-  #define HOST_FUNCTION(ret_type, name, params, ...) \
-    EMSCRIPTEN_KEEPALIVE ret_type host_##name params { __VA_ARGS__ }
+  #include "host_emscripten_header.h"
+  #define HOST_FUNCTION(ret_type, name, params, ...) EMSCRIPTEN_KEEPALIVE ret_type host_##name params { __VA_ARGS__ }
 #else
-  #include "wasm_c_api.h"
-  #include "wasm_export.h"
-  #include "host_mem_wamr.h"
+  #include "host_wamr_header.h"
   #define EXPAND_PARAMS(...) , ##__VA_ARGS__
-  #define HOST_FUNCTION(ret_type, name, params, ...) \
-    ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }
+  #define HOST_FUNCTION(ret_type, name, params, ...) ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }
 #endif
 
 // copy a cart-pointer to a host-string
@@ -115,9 +110,9 @@ HOST_FUNCTION(unsigned int, test_struct_out, (), {
 })
 
 #ifdef EMSCRIPTEN
-  #include "host_callbacks_emscripten.h"
+  #include "host_emscripten_footer.h"
 #else
-  #include "host_callbacks_wamr.h"
+  #include "host_wamr_footer.h"
 #endif
 
 bool wasm_host_load() {

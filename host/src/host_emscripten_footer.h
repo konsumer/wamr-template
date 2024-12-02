@@ -17,8 +17,6 @@ EM_ASYNC_JS(bool, wasm_host_load_wasm, (unsigned char* wasmBytesPtr, uint32_t wa
     }
   }
 
-  console.log('CART IMPORTS', importObject);
-
   const { instance: { exports } } = await WebAssembly.instantiate(wasmBytes, importObject);
   Module.cart = exports;
   Module.wasi1_instance.start(Module.cart);
