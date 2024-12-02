@@ -1,0 +1,14 @@
+trace:
+  description: print a string
+  returns: void
+  arguments:
+    str: string
+
+abort:
+  description: a fatal exit
+  returns: void
+  arguments:
+    message: string
+    filename: string
+    line: u32
+    column: u32
