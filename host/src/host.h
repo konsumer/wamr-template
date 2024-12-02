@@ -119,6 +119,8 @@ HOST_FUNCTION(unsigned int, test_struct_out, (), {
   return copy_to_cart(&point, sizeof(point));
 })
 
+///
+
 #ifdef EMSCRIPTEN
   #include "host_emscripten_footer.h"
 #else

@@ -1,0 +1,36 @@
+# These are test-functions for passing all the basic types (numbers, structs, bytes, strings)
+
+test_string_in:
+  description: send a string to host
+  returns: void
+  arguments:
+    str: string
+
+test_string_out:
+  description: return a string from host
+  returns: string
+  arguments: {}
+
+test_bytes_in:
+  description: send some bytes to host
+  returns: void
+  arguments:
+    bytes: u8[]
+    bytesLen: u32
+
+test_bytes_out:
+  description: return some bytes from host
+  returns: u8[]
+  arguments:
+    outLen: u32*
+
+test_struct_in:
+  description: send struct to host
+  returns: void
+  arguments:
+    point: TestPoint
+
+test_struct_out:
+  description: return struct from host
+  returns: TestPoint
+  arguments: {}
