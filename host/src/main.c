@@ -1,6 +1,12 @@
 #include <stdio.h>
-#include "host.h"
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fs.h"
+#include "host.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -13,8 +19,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!wasm_host_load() {
-    fprintf(stderr, "Could notstart host with %s\n", argv[1]);
+  if (!wasm_host_load()) {
+    fprintf(stderr, "Could not start cart-host with %s\n", argv[1]);
     return 1;
   }
 

@@ -1,11 +1,8 @@
 // implement any shared host types & functiosn here
 
 #pragma once
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <time.h>
+
 
 // get current unix-time in ms
 static int null0_millis() {
@@ -28,16 +25,16 @@ int cart_strlen(unsigned int cartPtr);
 // copy a cart-pointer to a host-string
 char* copy_from_cart_string(unsigned int cartPtr) {
   int len = cart_strlen(cartPtr);
-  char* out = NULL;
+  char* out = (char*)malloc(len+1);
   if (len) {
-    out = copy_from_cart(cartPtr, len);
+    out = (char*)copy_from_cart(cartPtr, len + 1);
   }
   return out;
 }
 
 // copy a host-string to a cart-pointer
 unsigned int copy_to_cart_string(char* hostString) {
-
+  return copy_to_cart(hostString,  strlen(hostString) + 1);
 }
 
 

@@ -8,6 +8,8 @@
 #include <string.h>
 #include "physfs.h"
 
+static char** null0_file_list_array;
+
 // these are the supported filetypes we can detect
 // see fs_parse_magic_bytes()
 typedef enum {
@@ -24,6 +26,9 @@ typedef enum {
 
 // call this to initialize filesystem
 bool fs_init(char* cartName);
+
+// called to unload filesystem
+void fs_unload();
 
 // load a file from native filesystem
 unsigned char* fs_load_file_real(char *filename, unsigned int *bytesRead);
@@ -46,34 +51,82 @@ DetectFileType fs_detect_type_real(char* filename);
 // detect file-type from physfs filesystem file
 DetectFileType fs_detect_type(char* filename);
 
+// get the short-name of cart, using filename
+char* fs_get_cart_name(char* filename);
+
+// Get info about a file from native filesystem
+PHYSFS_Stat fs_file_info(char* filename);
 
 
 // call this to initialize filesystem
-bool fs_init(char* cartName) {
+bool fs_init(char* cartFilename) {
   // logic:
+  //   mount root & write-dir (per-cartname)
   //   if cartName=dir: mount dir
   //   if cartName=zip: mount zip
   //   if cartName=wasm: mount dir of wasm
   //   else: return false
 
-  DetectFileType cartTyep = fs_detect_type_real(cartName);
-    switch(cartTyep) {
-      case FILE_TYPE_DIR: {}
-      case FILE_TYPE_ZIP: {}
-      case FILE_TYPE_WASM: {}
-      default: return false;
+  char* cartName = fs_get_cart_name(cartFilename);
+
+  if (cartName == NULL) {
+    return false;
+  }
+
+  char pathname[134];
+  snprintf(pathname, 134, "null0-%s", cartName);
+  const char* null0_writable_dir = PHYSFS_getPrefDir("null0", (const char *)pathname);
+
+  if (null0_writable_dir == NULL) {
+    return false;
+  }
+
+  if (!PHYSFS_init("/")) {
+    return false;
+  }
+
+  DetectFileType cartType = fs_detect_type_real(cartFilename);
+  switch(cartType) {
+    case FILE_TYPE_DIR:
+    case FILE_TYPE_ZIP: {
+      if (!PHYSFS_mount(cartFilename, NULL, 1)) {
+        PHYSFS_deinit();
+        return false;
+      }
     }
+    case FILE_TYPE_WASM: {}
+    default: return false;
+  }
+
+  if (!PHYSFS_mount(null0_writable_dir, NULL, 1)) {
+    PHYSFS_deinit();
+    return false;
+  }
+
+  if (!PHYSFS_setWriteDir(null0_writable_dir)) {
+    PHYSFS_deinit();
+    return false;
+  }
+
+  return true;
+}
+
+// called to unload filesystem
+void fs_unload() {
+  PHYSFS_deinit();
+  PHYSFS_freeList(null0_file_list_array);
 }
 
 // load a file from native filesystem
 unsigned char* fs_load_file_real(char *filename, unsigned int *bytesRead) {
   // TODO
+  return NULL;
 }
 
 // load a file from physfs filesystem
 unsigned char* fs_load_file(char* filename, uint32_t* bytesRead) {
   PHYSFS_File* f = PHYSFS_openRead(filename);
-  PHYSFS_Stat i = null0_file_info(filename);
+  PHYSFS_Stat i = fs_file_info(filename);
 
   unsigned char* b = (unsigned char*)malloc(i.filesize);
   PHYSFS_sint64 br = PHYSFS_readBytes(f, b, i.filesize);
@@ -85,6 +138,7 @@ unsigned char* fs_load_file(char* filename, uint32_t* bytesRead) {
 // save a file to native filesystem
 bool fs_save_file_real(char* filename, unsigned char* data, uint32_t byteSize) {
   // TODO
+  return false;
 }
 
 // save a file to physfs filesystem
@@ -159,4 +213,19 @@ DetectFileType fs_detect_type_real(char* filename) {
 // detect file-type from physfs filesystem file
 DetectFileType fs_detect_type(char* filename) {
   // TODO
+  return FILE_TYPE_UNKNOWN;
+}
+
+
+// get the short-name of cart, using filename
+char* fs_get_cart_name(char* filename) {
+  // TODO
+  return NULL;
+}
+
+// Get info about a file from native filesystem
+PHYSFS_Stat fs_file_info(char* filename) {
+  PHYSFS_Stat stat;
+  PHYSFS_stat(filename, &stat);
+  return stat;
 }

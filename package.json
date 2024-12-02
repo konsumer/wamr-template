@@ -1,7 +1,16 @@
 {
   "scripts": {
-    "start": "npx -y live-server docs",
+    "start:web": "live-server docs",
     "build:native": "cmake -B build && cmake --build build",
-    "build:web": "emcmake cmake -B wbuild && cmake --build wbuild"
+    "build:web": "emcmake cmake -B wbuild && cmake --build wbuild",
+    "build:carts": "",
+    "watch:carts": "",
+    "watch:web": "",
+    "clean": "rm -rf wbuild build docs/cart/* docs/host.mjs",
+    "start": "run-p build:web build:carts && run-p start:web watch:web watch:carts"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "npm-run-all": "^4.1.5"
   }
 }
