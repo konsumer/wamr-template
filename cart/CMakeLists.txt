@@ -44,8 +44,8 @@ endfunction()
 function(BUILD_AS_CART name)
   add_custom_target(
     as_${name}
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}.ts" "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts"
-    COMMAND npx asc "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}.ts" -o "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm" --exportStart --lib "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts" --use abort=_cart_abort --use trace=_cart_trace
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}/main.ts" "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts"
+    COMMAND npx asc "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}/main.ts" -o "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm" --exportStart --lib "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts" --use abort=_cart_abort --use trace=_cart_trace
     BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm"
   )
   add_custom_command(
@@ -55,7 +55,7 @@ function(BUILD_AS_CART name)
     ARGS
       "${PROJECT_SOURCE_DIR}/docs/carts/as_${name}.null0"
       "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm"
-      "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/"
+      "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}"
   )
 endfunction()
 

@@ -5,8 +5,6 @@
   </head>
   <body>
     <p>Check the dev-console for test-output.</p>
-    <canvas id="screen1"></canvas>
-    <canvas id="screen2"></canvas>
   </body>
   <script type="importmap">
     {
@@ -35,7 +33,7 @@
       return host
     }
 
-    const game1=await loadCart('carts/runtests.null0', document.getElementById('screen1'))
-    const game2=await loadCart('carts/as_runtests.null0', document.getElementById('screen2'))
+    const game1=await loadCart('carts/runtests.null0')
+    const game2=await loadCart('carts/as_runtests.null0')
   </script>
 </html>
