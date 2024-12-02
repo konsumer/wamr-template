@@ -62,6 +62,17 @@ unsigned int copy_to_cart_string(char* hostString) {
   return copy_to_cart(hostString,  strlen(hostString) + 1);
 }
 
+// helpful utils
+
+HOST_FUNCTION(void, trace, (unsigned int sPtr), {
+  printf("%s\n", copy_from_cart_string(sPtr));
+})
+
+HOST_FUNCTION(void, abort, (unsigned int mPtr, unsigned int fPtr, unsigned int line, unsigned int column), {
+  fprintf(stderr, "%s in %s:%u:%u\n", copy_from_cart_string(mPtr), copy_from_cart_string(fPtr), line, column);
+  keepRunning = false;
+})
+
 // test API
 
 typedef struct {

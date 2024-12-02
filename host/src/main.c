@@ -18,6 +18,9 @@
 // filesystem utils (used by host)
 #include "fs.h"
 
+// set this to false to stop
+bool keepRunning = true;
+
 // host implementations for emscripten/wamr
 #include "host.h"
 
@@ -39,7 +42,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  char* cartFilename = d == FILE_TYPE_WASM ? basename(argv[1]) : "main.wam";
+  char* cartFilename = d == FILE_TYPE_WASM ? basename(argv[1]) : "main.wasm";
   if (!wasm_host_load(cartFilename)) {
     fprintf(stderr, "Could not start cart-host with %s\n", argv[1]);
     return 1;
@@ -50,7 +53,7 @@ int main(int argc, char *argv[]) {
   #ifdef EMSCRIPTEN
     emscripten_set_main_loop(wasm_host_update, 60, false);
   #else
-    while(1) {
+    while(keepRunning) {
       wasm_host_update();
       sleep(0.016f); // ~60fps
     }

@@ -33,16 +33,5 @@ void* copy_from_cart(unsigned int cartPtr, unsigned int size) {
 
 // get the strlen of a cart-pointer
 EM_JS(int, cart_strlen, (unsigned int cartPtr), {
-  const MAX_STR_LEN=1024;
-  let len=0;
-  const mem = new Uint8Array(Module.cart.memory.buffer.slice(cartPtr, cartPtr + MAX_STR_LEN));
-  for (len=0;len<MAX_STR_LEN;len++) {
-    if (mem[len] === 0) {
-      break;
-    }
-  }
-  if (len === MAX_STR_LEN) {
-    return -1;
-  }
-  return len;
+  return Module.cart_strlen(cartPtr);
 });
