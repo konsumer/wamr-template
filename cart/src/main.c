@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include "cart.h"
-
-// tests built-in type-testing functions
-void run_test_api() {}
+#include "typetests.h"
 
 void update(uint64_t timeMS) {}
 
+void load(){
+  printf("cart (c): Hello from cart load.\n");
+}
+
 int main() {
-  printf("cart: Hello from cart main.\n");
-  run_test_api();
+  printf("cart (c): Hello from cart main.\n");
+  run_tests();
   return 0;
 }

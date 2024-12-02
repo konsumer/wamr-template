@@ -1,11 +1,16 @@
 #include <stdio.h>
 
-#include <stdint.h>
-#include <stdbool.h>
+// basic stuff that gets used all over
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+
+// filesystem utils (used by host)
 #include "fs.h"
+
+// host implementations for emscripten/wamr
 #include "host.h"
 
 int main(int argc, char *argv[]) {

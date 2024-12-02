@@ -2,18 +2,23 @@
 
 #pragma once
 
-// called when cart is loaded
-bool wasm_host_load() {
-  uint32_t wasmBytesLen = 0;
-  unsigned char* wasmBytes = fs_load_file("main.wasm", &wasmBytesLen);
-  if (wasmBytesLen == 0) {
-    return false;
-  }
-  return true;
+// copy a host-pointer to cart, return cart-pointer
+unsigned int copy_to_cart(void* hostPtr, unsigned int size) {
+  // TODO
+  return 0;
 }
 
-// called when cart is unloaded
-void wasm_host_unload() {}
+// copy a host-pointer to cart whenb you already have a cart-pointer
+void copy_to_cart_with_pointer(unsigned int outPtr, void* hostPtr, unsigned int size) {
+  // TODO
+}
 
-// called on each frame
-void wasm_host_update() {}
+// copy a cart-pointer to host, return host-pointer
+void* copy_from_cart(unsigned int cartPtr, unsigned int size) {
+  return NULL;
+}
+
+// get the strlen of a cart-pointer
+int cart_strlen(unsigned int cartPtr) {
+  return 0;
+}

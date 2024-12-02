@@ -1,11 +1,9 @@
 // this implements shared filesystem functions
 
 #pragma once
-#include <stdio.h>
-#include <stdint.h>
+
 #include <sys/stat.h>
 #include <unistd.h>
-#include <string.h>
 #include <libgen.h>
 #include "physfs.h"
 
@@ -59,7 +57,7 @@ PHYSFS_Stat fs_file_info(char* filename);
 /////
 
 // call this to initialize filesystem
-bool fs_init(char* cartfilename) {
+bool fs_init(char* cartFilename) {
   // logic:
   //   mount root & write-dir (per-cartname)
   //   if cartName=dir: mount dir
@@ -67,15 +65,21 @@ bool fs_init(char* cartfilename) {
   //   if cartName=wasm: mount dir of wasm
   //   else: return false
 
-  char* cartName = fs_get_cart_name(cartfilename);
+  char* cartName = fs_get_cart_name(cartFilename);
 
   if (cartName == NULL) {
     return false;
   }
 
-  char pathname[134];
-  snprintf(pathname, 134, "null0-%s", cartName);
-  const char* null0_writable_dir = PHYSFS_getPrefDir("null0", (const char *)pathname);
+  char null0_writable_dir_name[256] = "null0-"; // Initialize with prefix
+  strcat(null0_writable_dir_name, cartName);
+
+  // for some reason emscripten can't do PHYSFS_getPrefDir, so just use /home
+  #ifdef EMSCRIPTEN
+    const char* null0_writable_dir = "/home";
+  #else
+    const char* null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
+  #endif
 
   if (null0_writable_dir == NULL) {
     return false;
@@ -85,16 +89,25 @@ bool fs_init(char* cartfilename) {
     return false;
   }
 
-  DetectFileType cartType = fs_detect_type_real(cartfilename);
+  DetectFileType cartType = fs_detect_type_real(cartFilename);
+
   switch(cartType) {
     case FILE_TYPE_DIR:
     case FILE_TYPE_ZIP: {
-      if (!PHYSFS_mount(cartfilename, NULL, 1)) {
+      if (!PHYSFS_mount(cartFilename, NULL, 1)) {
         PHYSFS_deinit();
         return false;
       }
+      break;
     }
-    case FILE_TYPE_WASM: {}
+    case FILE_TYPE_WASM: {
+      if (!PHYSFS_mount(dirname(cartFilename), NULL, 1)) {
+        printf("no wasm dir\n");
+        PHYSFS_deinit();
+        return false;
+      }
+      break;
+    }
     default: return false;
   }
 

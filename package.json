@@ -1,9 +1,9 @@
 {
   "scripts": {
     "start:web": "live-server docs",
-    "build:native": "cmake -B build && cmake --build build --target null0",
-    "build:web": "emcmake cmake -B wbuild && cmake --build wbuild --target null0",
-    "build:carts": "cmake -B build && cmake --build build --target main",
+    "build:native": "cmake -G Ninja -B build && cmake --build build --target null0",
+    "build:web": "emcmake cmake -G Ninja -B wbuild && cmake --build wbuild --target null0",
+    "build:carts": "cmake -G Ninja -B build && cmake --build build --target main",
     "watch:carts": "nodemon -w ./cart -e c,cpp,h,png -x 'npm run build:carts'",
     "watch:web": "nodemon -w ./host -e c,cpp,h -x 'npm run build:web'",
     "clean": "rm -rf wbuild build docs/cart/* docs/host.mjs",

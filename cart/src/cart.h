@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 // import function from host
-#define HOST_FUNCTION(return_type, name, params) __attribute__((import_module("env"), import_name(##name))) return_type name params;
+#define HOST_FUNCTION(return_type, name, params) __attribute__((import_module("null0"), import_name(#name))) return_type name params;
 
 // export function to host
 #define CART_FUNCTION(n) __attribute__((export_name(n)))
