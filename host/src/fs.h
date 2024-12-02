@@ -64,7 +64,7 @@ bool fs_init(char* cartFilename) {
   //   if cartName=zip: mount zip
   //   if cartName=wasm: mount dir of wasm
   //   else: return false
-
+  //
   char* cartName = fs_get_cart_name(cartFilename);
 
   if (cartName == NULL) {
@@ -75,7 +75,40 @@ bool fs_init(char* cartFilename) {
     return false;
   }
 
+  // hardcode writable dir for emscripten, since PHYSFS_getPrefDir is null
+  // #ifdef EMSCRIPTEN
+  //   char null0_writable_dir[100];
+  //   strcpy(null0_writable_dir, "/home/");
+  //   strcat(null0_writable_dir, cartName);
+  //   if (mkdir(null0_writable_dir, 0) == -1) {
+  //     printf("could not make %s\n", null0_writable_dir);
+  //   }
+  //   printf("suggested: %s\n", PHYSFS_getPrefDir("null0", cartName));
+  // #else
+  //   null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
+  // #endif
+
   const char* null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
+
+  // build what is put into null0_writable_dir, so it can be mounted
+  #ifdef EMSCRIPTEN
+    if (mkdir("/home", 0) == -1) {
+      // printf("could not make /home\n");
+    }
+    if (mkdir("/home/web_user", 0) == -1) {
+      // printf("could not make /home/web_user\n");
+    }
+    if (mkdir("/home/web_user/.local", 0) == -1) {
+      // printf("could not make /home/web_user/.local\n");
+    }
+    if (mkdir("/home/web_user/.local/share", 0) == -1) {
+      // printf("could not make /home/web_user/.local/share\n");
+    }
+    if (mkdir(null0_writable_dir, 0) == -1) {
+      // printf("could not make %s\n", null0_writable_dir);
+    }
+  #endif
+
 
   if (null0_writable_dir == NULL) {
     return false;
@@ -107,7 +140,7 @@ bool fs_init(char* cartFilename) {
     return false;
   }
 
-  if (!PHYSFS_setWriteDir(null0_writable_dir)) {
+  if (!PHYSFS_setWriteDir((const char*)null0_writable_dir)) {
     PHYSFS_deinit();
     return false;
   }
@@ -275,17 +308,24 @@ DetectFileType fs_detect_type(char* filename) {
 }
 
 
-// get the short-name of cart, using filename
 char* fs_get_cart_name(char* filename) {
-  char sname[134];
-  strncpy(sname, filename, strlen(filename));
-  char* bname = basename(sname);
-  char* cartName = strtok(bname, ".");
+    // Allocate memory that will persist after function returns
+    char* sname = strdup(filename);  // Make a copy of filename
+    if (!sname) return NULL;
 
-  if (strlen(cartName) > 127) {
-    return NULL;
-  }
-  return cartName;
+    char* bname = basename(sname);
+    char* cartName = strtok(bname, ".");
+
+    if (!cartName || strlen(cartName) > 127) {
+        free(sname);
+        return NULL;
+    }
+
+    // Make a copy of cartName before freeing sname
+    char* result = strdup(cartName);
+    free(sname);
+
+    return result;
 }
 
 // Get info about a file from native filesystem

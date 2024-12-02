@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include "cart.h"
 #include "typetests.h"
+#include <inttypes.h>
 
-void update(uint64_t timeMS) {}
+void update(uint64_t timeMS) {
+  // printf("%" PRIu64 "\n", timeMS);
+}
 
 void load(){
   printf("cart (c): Hello from cart load.\n");
-  run_tests();
 }
 
 int main() {
   printf("cart (c): Hello from cart main.\n");
+  run_tests();
   return 0;
 }

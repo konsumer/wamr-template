@@ -26,7 +26,7 @@ HOST_FUNCTION(TestPoint*, test_struct_out, ())
 
 // tests built-in type-testing functions
 void run_tests() {
-  // test_string_in("cart (c): hi");
+  test_string_in("cart (c): hi");
   printf("cart (c): test_string_out - %s\n", test_string_out());
 
   unsigned char i[4] = {1, 2, 3, 4};

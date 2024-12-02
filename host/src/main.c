@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 // basic stuff that gets used all over
 #include <stdio.h>
 #include <stdbool.h>

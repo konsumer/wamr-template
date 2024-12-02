@@ -30,7 +30,7 @@ EM_ASYNC_JS(bool, wasm_host_load_wasm, (unsigned char* wasmBytesPtr, uint32_t wa
 // called on each frame
 EM_JS(void, wasm_host_update, (), {
   if ( Module?.cart?.update){
-    Module.cart.update(BigInt(Date.now()))
+    Module.cart.update(BigInt(Date.now()));
   }
 })
 
