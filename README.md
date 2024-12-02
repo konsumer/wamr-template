@@ -14,13 +14,22 @@ I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnul
 ## building
 
 ```
-# native host & cart
+# get build-tools and stuff
+npm i
+
+# native/emscripten host host & carts
 npm run build
 
-# emscripten host
+# just carts
+npm run build:carts
+
+# just emscripten host
 npm run build:web
 
-# run a server for web-host
+# just native host
+npm run build:native
+
+# run a live-reloading server for web (carts and host)
 npm start
 ```
 
