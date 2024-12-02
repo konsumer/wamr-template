@@ -71,21 +71,13 @@ bool fs_init(char* cartFilename) {
     return false;
   }
 
-  char null0_writable_dir_name[256] = "null0-"; // Initialize with prefix
-  strcat(null0_writable_dir_name, cartName);
-
-  // for some reason emscripten can't do PHYSFS_getPrefDir, so just use /home
-  #ifdef EMSCRIPTEN
-    const char* null0_writable_dir = "/home";
-  #else
-    const char* null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
-  #endif
-
-  if (null0_writable_dir == NULL) {
+  if (!PHYSFS_init("/")) {
     return false;
   }
 
-  if (!PHYSFS_init("/")) {
+  const char* null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
+
+  if (null0_writable_dir == NULL) {
     return false;
   }
 
@@ -102,7 +94,6 @@ bool fs_init(char* cartFilename) {
     }
     case FILE_TYPE_WASM: {
       if (!PHYSFS_mount(dirname(cartFilename), NULL, 1)) {
-        printf("no wasm dir\n");
         PHYSFS_deinit();
         return false;
       }
@@ -276,6 +267,9 @@ DetectFileType fs_detect_type(char* filename) {
   }
   uint32_t magic_number = 0;
   PHYSFS_sint64 br = PHYSFS_readBytes(f, (unsigned char*)&magic_number, sizeof(uint32_t));
+  if (br != sizeof(uint32_t)) {
+    return FILE_TYPE_UNKNOWN;
+  }
   PHYSFS_close(f);
   return fs_parse_magic_bytes(magic_number);
 }

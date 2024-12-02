@@ -1,14 +1,6 @@
 // implement any shared host types & functiosn here
 
 #pragma once
-#include <time.h>
-
-// get current unix-time in ms
-static int null0_millis() {
-  struct timespec now;
-  timespec_get(&now, TIME_UTC);
-  return ((unsigned int)now.tv_sec) * 1000 + ((unsigned int)now.tv_nsec) / 1000000;
-}
 
 // HOST: implement these memory-helpers for each host
 
@@ -45,7 +37,14 @@ void wasm_host_update();
 #else
   #include "host_wamr_header.h"
   #define EXPAND_PARAMS(...) , ##__VA_ARGS__
-  #define HOST_FUNCTION(ret_type, name, params, ...) ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }
+  // #define HOST_FUNCTION(ret_type, name, params, ...) ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ };
+  cvector_vector_type(NativeSymbol) null0_native_symbols = NULL;
+
+  #define HOST_FUNCTION(ret_type, name, params, ...) \
+    ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }; \
+    static void __attribute__((constructor)) _register_##name() { \
+      cvector_push_back(null0_native_symbols, ((NativeSymbol){ #name, host_##name, NULL })); \
+    }
 #endif
 
 // copy a cart-pointer to a host-string

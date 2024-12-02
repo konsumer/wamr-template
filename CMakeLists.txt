@@ -25,6 +25,9 @@ if(CMAKE_VERSION VERSION_LESS "3.24.0")
   endif()
 endif()
 
+set(CMAKE_BUILD_TYPE Debug)
+add_compile_options(-g -O0)
+
 # everyone wants to make an "uninstall" target
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)
 

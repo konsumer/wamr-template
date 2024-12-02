@@ -6,6 +6,15 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef _WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#define sleep(x) usleep((x)*1000)
+#endif
+
+#define CVECTOR_LOGARITHMIC_GROWTH
 #include "cvector.h"
 
 // filesystem utils (used by host)
@@ -35,6 +44,7 @@ int main(int argc, char *argv[]) {
   #else
     while(1) {
       wasm_host_update();
+      sleep(0.016f); // ~60fps
     }
   #endif
 
