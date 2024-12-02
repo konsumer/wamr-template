@@ -32,10 +32,20 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!wasm_host_load()) {
+  DetectFileType d = fs_detect_type_real(argv[1]);
+
+  if (d == FILE_TYPE_UNKNOWN) {
+    fprintf(stderr, "Invalid cart %s\n", argv[1]);
+    return 1;
+  }
+
+  char* cartFilename = d == FILE_TYPE_WASM ? basename(argv[1]) : "main.wam";
+  if (!wasm_host_load(cartFilename)) {
     fprintf(stderr, "Could not start cart-host with %s\n", argv[1]);
     return 1;
   }
+
+  // printf("loaded: %s\n", cartFilename);
 
   #ifdef EMSCRIPTEN
     emscripten_set_main_loop(wasm_host_update, 60, false);

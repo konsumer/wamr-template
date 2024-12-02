@@ -62,7 +62,7 @@ bool fs_init(char* cartFilename) {
   //   mount root & write-dir (per-cartname)
   //   if cartName=dir: mount dir
   //   if cartName=zip: mount zip
-  //   if cartName=wasm: mount dir of wasm
+  //   if cartName=wasm: mount dir that contains the wasm
   //   else: return false
   //
   char* cartName = fs_get_cart_name(cartFilename);
@@ -74,19 +74,6 @@ bool fs_init(char* cartFilename) {
   if (!PHYSFS_init("/")) {
     return false;
   }
-
-  // hardcode writable dir for emscripten, since PHYSFS_getPrefDir is null
-  // #ifdef EMSCRIPTEN
-  //   char null0_writable_dir[100];
-  //   strcpy(null0_writable_dir, "/home/");
-  //   strcat(null0_writable_dir, cartName);
-  //   if (mkdir(null0_writable_dir, 0) == -1) {
-  //     printf("could not make %s\n", null0_writable_dir);
-  //   }
-  //   printf("suggested: %s\n", PHYSFS_getPrefDir("null0", cartName));
-  // #else
-  //   null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
-  // #endif
 
   const char* null0_writable_dir = PHYSFS_getPrefDir("null0", cartName);
 
