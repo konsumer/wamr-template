@@ -6,9 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <libgen.h>
 #include "physfs.h"
-
-static char** null0_file_list_array;
 
 // these are the supported filetypes we can detect
 // see fs_parse_magic_bytes()
@@ -57,9 +56,10 @@ char* fs_get_cart_name(char* filename);
 // Get info about a file from native filesystem
 PHYSFS_Stat fs_file_info(char* filename);
 
+/////
 
 // call this to initialize filesystem
-bool fs_init(char* cartFilename) {
+bool fs_init(char* cartfilename) {
   // logic:
   //   mount root & write-dir (per-cartname)
   //   if cartName=dir: mount dir
@@ -67,7 +67,7 @@ bool fs_init(char* cartFilename) {
   //   if cartName=wasm: mount dir of wasm
   //   else: return false
 
-  char* cartName = fs_get_cart_name(cartFilename);
+  char* cartName = fs_get_cart_name(cartfilename);
 
   if (cartName == NULL) {
     return false;
@@ -85,11 +85,11 @@ bool fs_init(char* cartFilename) {
     return false;
   }
 
-  DetectFileType cartType = fs_detect_type_real(cartFilename);
+  DetectFileType cartType = fs_detect_type_real(cartfilename);
   switch(cartType) {
     case FILE_TYPE_DIR:
     case FILE_TYPE_ZIP: {
-      if (!PHYSFS_mount(cartFilename, NULL, 1)) {
+      if (!PHYSFS_mount(cartfilename, NULL, 1)) {
         PHYSFS_deinit();
         return false;
       }
@@ -114,13 +114,39 @@ bool fs_init(char* cartFilename) {
 // called to unload filesystem
 void fs_unload() {
   PHYSFS_deinit();
-  PHYSFS_freeList(null0_file_list_array);
 }
 
 // load a file from native filesystem
 unsigned char* fs_load_file_real(char *filename, unsigned int *bytesRead) {
-  // TODO
-  return NULL;
+  FILE* file = fopen(filename, "rb");
+  if (file == NULL) {
+    *bytesRead = 0;
+    return NULL;
+  }
+
+  fseek(file, 0, SEEK_END);
+  size_t size = (size_t)ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  if (size <= 0) {
+    fclose(file);
+    *bytesRead = 0;
+    return NULL;
+  }
+
+  unsigned char* data = (unsigned char*)malloc(size * sizeof(unsigned char));
+  if (data == NULL) {
+    fclose(file);
+    *bytesRead = 0;
+    return NULL;
+  }
+
+  // Read the file
+  unsigned int bytes = (unsigned int)fread(data, sizeof(unsigned char), size, file);
+  fclose(file);
+  *bytesRead = bytes;
+
+  return data;
 }
 
 // load a file from physfs filesystem
@@ -137,8 +163,27 @@ unsigned char* fs_load_file(char* filename, uint32_t* bytesRead) {
 
 // save a file to native filesystem
 bool fs_save_file_real(char* filename, unsigned char* data, uint32_t byteSize) {
-  // TODO
-  return false;
+  if (filename == NULL || data == NULL) {
+    return false;
+  }
+  FILE *file = fopen(filename, "wb");
+  if (file == NULL) {
+    return false;
+  }
+
+  size_t count = fwrite(data, sizeof(unsigned char), byteSize, file);
+
+  if (count <= 0) {
+    fclose(file);
+    return false;
+  }
+
+  if (count != (size_t)byteSize) {
+    fclose(file);
+    return false;
+  }
+
+  return fclose(file) == 0;
 }
 
 // save a file to physfs filesystem
@@ -212,15 +257,28 @@ DetectFileType fs_detect_type_real(char* filename) {
 
 // detect file-type from physfs filesystem file
 DetectFileType fs_detect_type(char* filename) {
-  // TODO
-  return FILE_TYPE_UNKNOWN;
+  PHYSFS_File* f = PHYSFS_openRead(filename);
+  if (!f) {
+    return FILE_TYPE_UNKNOWN;
+  }
+  uint32_t magic_number = 0;
+  PHYSFS_sint64 br = PHYSFS_readBytes(f, (unsigned char*)&magic_number, sizeof(uint32_t));
+  PHYSFS_close(f);
+  return fs_parse_magic_bytes(magic_number);
 }
 
 
 // get the short-name of cart, using filename
 char* fs_get_cart_name(char* filename) {
-  // TODO
-  return NULL;
+  char sname[134];
+  strncpy(sname, filename, strlen(filename));
+  char* bname = basename(sname);
+  char* cartName = strtok(bname, ".");
+
+  if (strlen(cartName) > 127) {
+    return NULL;
+  }
+  return cartName;
 }
 
 // Get info about a file from native filesystem

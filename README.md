@@ -9,7 +9,7 @@ I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnul
 - Build hosts and cart easily (with cmake)
 - Test API to show how to pass more advanced values back & forth
 - shared filesystem that uses a zip-file
-- (planned) Codegen to use a YAML file to describe your API (and generate the host & C cart-header)
+- (planned) Codegen to use a YAML or wit file to describe API (and generate the host & C cart-header)
 
 ## building
 
