@@ -1,6 +1,6 @@
 This contains a native and web WASI host. The idea is that you are making something like [null0](https://giuthub.com/natnullgames/null0) where you have a host written in C, and "carts" written in whatever the user wants.
 
-I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnullgames/null0) quickjly, but you can use it for whatever you like. It uses WASI `preview1` so it will work with any wasm-language that support that.
+I wanted to be able to spin up host ideas for [null0](https://giuthub.com/natnullgames/null0) quickly, but you can use it for whatever you like. It uses WASI `preview1` so it will work with any wasm-language that support that.
 
 ## features
 

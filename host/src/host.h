@@ -23,7 +23,7 @@ int cart_strlen(unsigned int cartPtr);
 bool wasm_host_load_wasm (unsigned char* wasmBytesPtr, uint32_t wasmBytesLen);
 
 // this is defined at end of this file, it just loads file & calls wasm_host_load_wasm
-bool wasm_host_load();
+bool wasm_host_load(char* wasmFilename);
 
 // called when cart is unloaded
 void wasm_host_unload();
@@ -61,6 +61,17 @@ char* copy_from_cart_string(unsigned int cartPtr) {
 unsigned int copy_to_cart_string(char* hostString) {
   return copy_to_cart(hostString,  strlen(hostString) + 1);
 }
+
+// helpful utils
+
+HOST_FUNCTION(void, trace, (unsigned int sPtr), {
+  printf("%s\n", copy_from_cart_string(sPtr));
+})
+
+HOST_FUNCTION(void, abort, (unsigned int mPtr, unsigned int fPtr, unsigned int line, unsigned int column), {
+  fprintf(stderr, "%s in %s:%u:%u\n", copy_from_cart_string(mPtr), copy_from_cart_string(fPtr), line, column);
+  keepRunning = false;
+})
 
 // test API
 
@@ -114,12 +125,12 @@ HOST_FUNCTION(unsigned int, test_struct_out, (), {
   #include "host_wamr_footer.h"
 #endif
 
-bool wasm_host_load() {
-  if (fs_detect_type("main.wasm") != FILE_TYPE_WASM) {
+bool wasm_host_load(char* wasmFilename) {
+  if (fs_detect_type(wasmFilename) != FILE_TYPE_WASM) {
     return false;
   }
   uint32_t wasmBytesLen = 0;
-  unsigned char* wasmBytes = fs_load_file("main.wasm", &wasmBytesLen);
+  unsigned char* wasmBytes = fs_load_file(wasmFilename, &wasmBytesLen);
   if (wasmBytesLen == 0) {
     return false;
   }

@@ -5,10 +5,13 @@
 // called on web-side JS to load cart into MOdule and expose host-functions to it
 EM_ASYNC_JS(bool, wasm_host_load_wasm, (unsigned char* wasmBytesPtr, uint32_t wasmBytesLen), {
   const wasmBytes = Module.HEAPU8.slice(wasmBytesPtr, wasmBytesPtr+wasmBytesLen);
+  const d = new TextDecoder();
   const importObject = {
     null0: {},
     wasi_snapshot_preview1: Module.wasi1_instance
   };
+
+  Module.cart_strlen = (s) => new Uint8Array(Module.cart.memory.buffer.slice(s, s+(1024*1024))).findIndex((b) => b == 0);
 
   // bind any host exports that start with host_
   for (const k of Object.keys(Module)) {
@@ -30,7 +33,7 @@ EM_ASYNC_JS(bool, wasm_host_load_wasm, (unsigned char* wasmBytesPtr, uint32_t wa
 // called on each frame
 EM_JS(void, wasm_host_update, (), {
   if ( Module?.cart?.update){
-    Module.cart.update(BigInt(Date.now()))
+    Module.cart.update(BigInt(Date.now()));
   }
 })
 

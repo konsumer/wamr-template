@@ -27,8 +27,38 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
 
-add_executable(main src/main.c)
-set_target_properties(main
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs/cart"
-)
+function(BUILD_C_CART name)
+  add_executable(${name} c/${name}/main.c)
+  target_include_directories(${name} PUBLIC c)
+  add_custom_command(
+    TARGET ${name}
+    POST_BUILD
+    COMMAND "${PROJECT_SOURCE_DIR}/tools/buildcart.sh"
+    ARGS
+      "${PROJECT_SOURCE_DIR}/docs/carts/${name}.null0"
+      "${CMAKE_CURRENT_BINARY_DIR}/${name}.wasm"
+      "${CMAKE_CURRENT_SOURCE_DIR}/c/${name}"
+  )
+endfunction()
+
+function(BUILD_AS_CART name)
+  add_custom_target(
+    as_${name}
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}.ts" "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts"
+    COMMAND npx asc "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/${name}.ts" -o "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm" --exportStart --lib "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/cart.ts" --use abort=_cart_abort --use trace=_cart_trace
+    BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm"
+  )
+  add_custom_command(
+    TARGET as_${name}
+    POST_BUILD
+    COMMAND "${PROJECT_SOURCE_DIR}/tools/buildcart.sh"
+    ARGS
+      "${PROJECT_SOURCE_DIR}/docs/carts/as_${name}.null0"
+      "${CMAKE_CURRENT_BINARY_DIR}/as_${name}.wasm"
+      "${CMAKE_CURRENT_SOURCE_DIR}/assemblyscript/"
+  )
+endfunction()
+
+
+BUILD_C_CART(runtests)
+BUILD_AS_CART(runtests)

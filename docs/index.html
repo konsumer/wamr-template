@@ -5,7 +5,8 @@
   </head>
   <body>
     <p>Check the dev-console for test-output.</p>
-    <canvas id="screen"></canvas>
+    <canvas id="screen1"></canvas>
+    <canvas id="screen2"></canvas>
   </body>
   <script type="importmap">
     {
@@ -17,22 +18,24 @@
   <script type="module">
     import setupHost from './host.mjs'
     import { WasiPreview1 } from 'easywasi'
+    import EmscriptenFS from './emscripten_fs.js'
 
-    async function loadCart(cartUrl) {
-      const wasi1_instance = new WasiPreview1()
+    async function loadCart(cartUrl, canvas) {
+      const wasi1_instance = new WasiPreview1({fs: new EmscriptenFS()})
       const fname = cartUrl.split('/').pop()
       const host = await setupHost({
         wasi1_instance,
-        canvas: document.getElementById('screen'),
+        canvas,
         arguments: [`/${fname}`],
-        preRun: async ({ FS_createPreloadedFile }) => {
+        preRun: async ({ FS_createPreloadedFile, FS }) => {
           await FS_createPreloadedFile('/', fname, cartUrl, true, false)
+          wasi1_instance.fs.FS=FS
         }
       })
-
-      console.log('HOST', host)
+      return host
     }
 
-    await loadCart('cart/main.wasm')
+    const game1=await loadCart('carts/runtests.null0', document.getElementById('screen1'))
+    const game2=await loadCart('carts/as_runtests.null0', document.getElementById('screen2'))
   </script>
 </html>
