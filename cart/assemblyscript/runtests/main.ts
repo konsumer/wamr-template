@@ -26,7 +26,15 @@ function get_host_string(ptr: usize): string {
   if (!ptr) return ""
   let len = 0
   while (i32.load8_u(ptr + len) !== 0) len++
-  return String.UTF8.decode(get_host_bytes(ptr, len), true)
+  trace("getting string: " + len.toString() + " " + ptr.toString())
+
+  if (len < 1) {
+    return ""
+  }
+
+  const view = new ArrayBuffer(len)
+  memory.copy(changetype<usize>(view), ptr, len)
+  return String.UTF8.decode(view, true)
 }
 
 class TestPoint {
@@ -49,17 +57,7 @@ declare function _test_string_out(): usize
 
 function test_string_out(): string {
   const ptr = _test_string_out()
-  trace("cart-size: " + ptr.toString())
-
-  // First, calculate the string length
-  let len = 0
-  while (i32.load8_u(ptr + len) !== 0) len++
-
-  // Create a new ArrayBuffer view of the exact size we need
-  const view = new ArrayBuffer(len)
-  memory.copy(changetype<usize>(view), ptr, len)
-
-  return String.UTF8.decode(view, true)
+  return get_host_string(ptr)
 }
 
 @external("null0", "test_bytes_out")
