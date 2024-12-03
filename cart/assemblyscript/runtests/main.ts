@@ -24,13 +24,11 @@ export function get_host_bytes(lenPtr: usize, bytesPtr: usize): ArrayBuffer {
 // utility function for getting string from host
 function get_host_string(ptr: usize): string {
   if (!ptr) return ""
+
   let len = 0
   while (i32.load8_u(ptr + len) !== 0) len++
-  trace("getting string: " + len.toString() + " " + ptr.toString())
 
-  if (len < 1) {
-    return ""
-  }
+  if (len < 1) return ""
 
   const view = new ArrayBuffer(len)
   memory.copy(changetype<usize>(view), ptr, len)
@@ -54,7 +52,6 @@ function test_string_in(s: string): void {
 
 @external("null0", "test_string_out")
 declare function _test_string_out(): usize
-
 function test_string_out(): string {
   const ptr = _test_string_out()
   return get_host_string(ptr)
