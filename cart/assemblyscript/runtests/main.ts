@@ -10,7 +10,7 @@ export function free(pointer: usize): void {
   __unpin(pointer)
 }
 
-// siumple util to properly copy a string from host
+// simple util to properly copy a string from host
 // it's already been lowered into memory, but this makes it work better
 
 // utility function for getting bytes from host

@@ -11,6 +11,7 @@ EM_ASYNC_JS(bool, wasm_host_load_wasm, (unsigned char* wasmBytesPtr, uint32_t wa
     wasi_snapshot_preview1: Module.wasi1_instance
   };
 
+  // shared util to get a strlen, max 1024*1024
   Module.cart_strlen = (s) => new Uint8Array(Module.cart.memory.buffer.slice(s, s+(1024*1024))).findIndex((b) => b == 0);
 
   // bind any host exports that start with host_
