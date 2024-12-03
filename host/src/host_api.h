@@ -1,58 +1,72 @@
+// Host interface exposed to WAMR and Emscripten
 #pragma once
 
+#include "hexdump.h"
+
+// Used to test passing structs over wasm-barrier
 typedef struct {
-  unsigned int x;
-  unsigned int y;
+  u32 x;
+  u32 y;
 } TestPoint;
 
-// helpful utils
+// UTILS API
 
-HOST_FUNCTION(void, trace, (unsigned int sPtr), {
-  printf("%s\n", copy_from_cart_string(sPtr));
+// print a string
+HOST_FUNCTION(void, trace, (u32 strPtr), {
+  char* str = copy_from_cart_string(strPtr);
+  printf("%s\n", str);
+  free(str);
 })
 
-HOST_FUNCTION(void, abort, (unsigned int mPtr, unsigned int fPtr, unsigned int line, unsigned int column), {
-  fprintf(stderr, "%s in %s:%u:%u\n", copy_from_cart_string(mPtr), copy_from_cart_string(fPtr), line, column);
-  keepRunning = false;
+// a fatal exit
+HOST_FUNCTION(void, abort, (u32 messagePtr, u32 filenamePtr, u32 line, u32 column), {
+  char* message = copy_from_cart_string(messagePtr);
+  char* filename = copy_from_cart_string(filenamePtr);
+  fprintf(stderr, "%s: %s:%u:%u\n", message, filename, line, column);
+  free(message);
+  free(filename);
 })
 
-// test API
+// TEST API
 
 // send a string to host
-HOST_FUNCTION(void, test_string_in, (unsigned int sPtr), {
-  char* str = copy_from_cart_string(sPtr);
-  printf("host: test_string_in - %s\n", str);
+HOST_FUNCTION(void, test_string_in, (u32 strPtr), {
+  char* str = copy_from_cart_string(strPtr);
+  printf("host test_string_in: got string from cart: %s\n", str);
+  free(str);
 })
 
 // return a string from host
-HOST_FUNCTION(unsigned int, test_string_out, (), {
-  char* s = "hello from host!";
-  unsigned int retPtr = copy_to_cart_string(s);
-  return retPtr;
+HOST_FUNCTION(u32, test_string_out, (), {
+  char* s = "hello from host";
+  return copy_to_cart_string(s);
 })
 
 // send some bytes to host
-HOST_FUNCTION(void, test_bytes_in, (unsigned int bytesPtr, unsigned int bytesLen), {
-  unsigned char* bytes = copy_from_cart(bytesPtr, bytesLen);
-  printf("host: test_bytes_in (%u) - %u %u %u %u\n", bytesLen, bytes[0], bytes[1], bytes[2], bytes[3]);
+HOST_FUNCTION(void, test_bytes_in, (u32 bytesPtr, u32 bytesLen), {
+  u8* bytes = copy_from_cart(bytesPtr, bytesLen);
+  printf("host test_bytes_in:\n");
+  hexdump(bytes, bytesLen);
+  free(bytes);
 })
 
 // return some bytes from host
-HOST_FUNCTION(unsigned int, test_bytes_out, (unsigned int outLenPtr), {
-  unsigned int outLen = 4;
-  unsigned char bytes[] = {0,1,2,3};
+HOST_FUNCTION(u32, test_bytes_out, (u32 outLenPtr), {
+  u32 outLen = 4;
+  u8 returnVal[4] = {1,2,3,4};
   copy_to_cart_with_pointer(outLenPtr, &outLen, sizeof(outLen));
-  return copy_to_cart(bytes, outLen);
+  return copy_to_cart(returnVal, outLen);
 })
 
 // send struct to host
-HOST_FUNCTION(void, test_struct_in, (unsigned int pointPntr), {
-  TestPoint* point = copy_from_cart(pointPntr, sizeof(TestPoint));
-  printf("host: test_struct_in - %ux%u\n", point->x, point->y);
+HOST_FUNCTION(void, test_struct_in, (u32 pointPtr), {
+  TestPoint* point = copy_from_cart(pointPtr, sizeof(TestPoint));
+  printf("host test_struct_in: (%u, %u)\n", point->x, point->y);
+  free(point);
 })
 
 // return struct from host
-HOST_FUNCTION(unsigned int, test_struct_out, (), {
-  TestPoint point = {.x=200, .y=100};
-  return copy_to_cart(&point, sizeof(point));
+HOST_FUNCTION(u32, test_struct_out, (), {
+  TestPoint result = { .x=1111, .y=2222 };
+  return copy_to_cart(&result, sizeof(result));
 })
