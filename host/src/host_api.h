@@ -1,4 +1,5 @@
 // Host interface exposed to WAMR and Emscripten
+
 #pragma once
 
 #include "hexdump.h"

@@ -28,8 +28,8 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
   RuntimeInitArgs init_args;
   memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
-  static char global_heap_buf[8092 * 8];
   init_args.mem_alloc_type = Alloc_With_Pool;
+  static char global_heap_buf[8092 * 8];
   init_args.mem_alloc_option.pool.heap_buf = global_heap_buf;
   init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
 
@@ -42,7 +42,8 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
     return false;
   }
 
-  uint32_t stack_size = 8092, heap_size = 8092;
+  uint32_t stack_size = 8092;
+  uint32_t heap_size = 8092;
   char error_buf[128];
 
   error_buf[0] = 0;
@@ -73,6 +74,8 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
   cart_keyUp = wasm_runtime_lookup_function(module_inst, "keyUp");
   cart_keyDown = wasm_runtime_lookup_function(module_inst, "keyDown");
 
+  // for some reason load mustbe called before main
+
   if (cart_load != NULL) {
     if (!wasm_runtime_call_wasm(exec_env, cart_load, 0, NULL)) {
       // not fatal, but this will help with troubleshooting
@@ -81,7 +84,6 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
   }
 
   wasm_application_execute_main(module_inst, 0, NULL);
-
 
   return true;
 }

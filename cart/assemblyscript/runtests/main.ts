@@ -10,6 +10,25 @@ export function free(pointer: usize): void {
   __unpin(pointer)
 }
 
+// siumple util to properly copy a string from host
+// it's already been lowered into memory, but this makes it work better
+
+// utility function for getting bytes from host
+export function get_host_bytes(lenPtr: usize, bytesPtr: usize): ArrayBuffer {
+  const len = i32.load(lenPtr)
+  const view = new ArrayBuffer(len)
+  memory.copy(changetype<usize>(view), bytesPtr, len)
+  return view
+}
+
+// utility function for getting string from host
+function get_host_string(ptr: usize): string {
+  if (!ptr) return ""
+  let len = 0
+  while (i32.load8_u(ptr + len) !== 0) len++
+  return String.UTF8.decode(get_host_bytes(ptr, len), true)
+}
+
 class TestPoint {
   constructor(x:i32 = 0, y:i32 = 0) {
     this.x = x
@@ -26,24 +45,47 @@ function test_string_in(s: string): void {
 }
 
 @external("null0", "test_string_out")
-declare function _test_string_out(): ArrayBuffer
-function test_string_out(): String {
-  return String.UTF8.decode(_test_string_out())
+declare function _test_string_out(): usize
+
+function test_string_out(): string {
+  const ptr = _test_string_out()
+  trace("cart-size: " + ptr.toString())
+
+  // First, calculate the string length
+  let len = 0
+  while (i32.load8_u(ptr + len) !== 0) len++
+
+  // Create a new ArrayBuffer view of the exact size we need
+  const view = new ArrayBuffer(len)
+  memory.copy(changetype<usize>(view), ptr, len)
+
+  return String.UTF8.decode(view, true)
+}
+
+@external("null0", "test_bytes_out")
+declare function _test_bytes_out(bytesLenPtr: usize): usize
+function test_bytes_out(): ArrayBuffer {
+  // Create buffer for length
+  const lenBuf = new ArrayBuffer(4)
+  const lenPtr = changetype<usize>(lenBuf)
+
+  // Get bytes pointer from host (host will write length to lenPtr)
+  const bytesPtr = _test_bytes_out(lenPtr)
+
+  // Read the length that the host wrote
+  const bytesLen = i32.load(lenPtr)
+
+  // Create buffer of proper size and copy data
+  const view = new ArrayBuffer(bytesLen)
+  memory.copy(changetype<usize>(view), bytesPtr, bytesLen)
+
+  return view
 }
 
 @external("null0", "test_bytes_in")
 declare function _test_bytes_in(bytes:ArrayBuffer, bytesLen:i32): void
 function test_bytes_in(bytes:ArrayBuffer): void {
   _test_bytes_in(bytes, bytes.byteLength)
-}
-
-@external("null0", "test_bytes_out")
-declare function _test_bytes_out(bytesLenPtr:usize): ArrayBuffer
-function test_bytes_out(): ArrayBuffer {
-  let bytesLenPtr = malloc(sizeof<i32>())
-  const r = _test_bytes_out(bytesLenPtr)
-  free(bytesLenPtr)
-  return r
 }
 
 @external("null0", "test_struct_in")
