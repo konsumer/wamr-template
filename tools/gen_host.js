@@ -50,7 +50,8 @@ function generateBody(fname, func) {
     lines.push(`  return copy_to_cart_string(s);`)
   } else if (func.returns.endsWith('[]')) {
     lines.push(`  u32 outLen = 0;`)
-    lines.push(`  // implement u8* returnVal=${fname}(&outLen) here`)
+    lines.push(`  // implement ${func.returns.replace('[]', '')}* returnVal=${fname}(&outLen) here`)
+    lines.push(`  ${func.returns.replace('[]', '')}* returnVal = {};`)
     lines.push(`  copy_to_cart_with_pointer(outLenPtr, &outLen, sizeof(outLen));`)
     lines.push(`  return copy_to_cart(returnVal, outLen);`)
   } else if (func.returns[0].toUpperCase() === func.returns[0]) {
