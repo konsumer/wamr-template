@@ -26,7 +26,7 @@ function get_host_string(ptr: usize): string {
   if (!ptr) return ""
 
   let len = 0
-  while (i32.load8_u(ptr + len) !== 0) len++
+  while (i32.load8_u(ptr + len) !== 0 && len < (1024*1024)) len++
 
   if (len < 1) return ""
 
