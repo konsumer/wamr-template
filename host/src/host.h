@@ -56,6 +56,15 @@ void wasm_host_update();
     }
 #endif
 
+// these are derived from copy_to_cart/cart_strlen/etc
+
+// copy a cart-pointer to host, return host-pointer
+void* copy_from_cart(unsigned int cartPtr, unsigned int size) {
+  void* out = malloc(size);
+  copy_from_cart_with_pointer(out, cartPtr, size);
+  return out;
+}
+
 // copy a cart-pointer to a host-string
 char* copy_from_cart_string(unsigned int cartPtr) {
   int len = cart_strlen(cartPtr);
@@ -68,7 +77,7 @@ char* copy_from_cart_string(unsigned int cartPtr) {
 
 // copy a host-string to a cart-pointer
 unsigned int copy_to_cart_string(char* hostString) {
-  return copy_to_cart(hostString,  strlen(hostString) + 1);
+  return copy_to_cart(hostString, strlen(hostString) + 1);
 }
 
 #include "host_api.h"
