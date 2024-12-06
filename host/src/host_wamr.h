@@ -3,6 +3,7 @@
 #pragma once
 
 #include <time.h>
+#include <MiniFB.h>
 
 // get current unix-time in ms
 uint64_t null0_millis() {
@@ -21,12 +22,12 @@ static wasm_function_inst_t cart_keyUp = NULL;
 static wasm_function_inst_t cart_keyDown = NULL;
 
 // used to call update
-static uint64_t update_args[1];
+static u32 update_args[2];
 
 // these will be used in callbacks & wasm_host_load_wasm
 static wasm_module_t module;
 static wasm_module_inst_t module_inst;
-static wasm_exec_env_t exec_env;
+static wasm_exec_env_t null0_exec_env;
 
 // implement these memory-helpers for each host
 
@@ -66,50 +67,19 @@ u32 cart_strlen(u32 cartPtr) {
 // implement these callbacks for each host
 
 // called on native wamr/web host to load actual cart bytes expose host-functions to it
-bool wasm_host_load_wasm (u8* wasmBytes, u32 wasmBytesLen) {
-
-  RuntimeInitArgs init_args;
-  memset(&init_args, 0, sizeof(RuntimeInitArgs));
-
-  init_args.mem_alloc_type = Alloc_With_Pool;
-  static char global_heap_buf[8092 * 8];
-  init_args.mem_alloc_option.pool.heap_buf = global_heap_buf;
-  init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
-
-  init_args.n_native_symbols = cvector_size(null0_native_symbols);
-  init_args.native_module_name = "null0";
-  init_args.native_symbols = null0_native_symbols;
-
-  if (!wasm_runtime_full_init(&init_args)) {
-    fprintf(stderr, "ERROR: Init runtime environment failed.\n");
+bool wasm_host_load_wasm(u8* wasmBytes, u32 wasmBytesLen) {
+  wasm_runtime_init();
+  
+  if (!wasm_runtime_register_natives("null0", null0_native_symbols, cvector_size(null0_native_symbols))) {
     return false;
   }
-
-  u32 stack_size = 8092;
-  u32 heap_size = 8092;
+  
   char error_buf[128];
+  wasm_module_t module = wasm_runtime_load(wasmBytes, wasmBytesLen, error_buf, sizeof(error_buf));
+  module_inst = wasm_runtime_instantiate(module, 65536, 0, error_buf, sizeof(error_buf));
+  null0_exec_env = wasm_runtime_create_exec_env(module_inst, 32768);
 
-  error_buf[0] = 0;
-  module = wasm_runtime_load(wasmBytes, wasmBytesLen, error_buf, 128);
-  free(wasmBytes);
-
-  if (error_buf[0] != 0) {
-    fprintf(stderr, "ERROR: load - %s\n", error_buf);
-    return false;
-  }
-
-  error_buf[0] = 0;
-  module_inst = wasm_runtime_instantiate(module, stack_size, heap_size, error_buf, 128);
-  if (error_buf[0] != 0) {
-    fprintf(stderr, "ERROR: instantiate - %s\n", error_buf);
-    return false;
-  }
-
-  exec_env = wasm_runtime_create_exec_env(module_inst, stack_size);
-
-  wasm_function_inst_t cart_load = NULL;
-
-  cart_load = wasm_runtime_lookup_function(module_inst, "load");
+  wasm_function_inst_t cart_load = wasm_runtime_lookup_function(module_inst, "load");
   cart_unload = wasm_runtime_lookup_function(module_inst, "unload");
   cart_update = wasm_runtime_lookup_function(module_inst, "update");
   cart_buttonUp = wasm_runtime_lookup_function(module_inst, "buttonUp");
@@ -117,16 +87,14 @@ bool wasm_host_load_wasm (u8* wasmBytes, u32 wasmBytesLen) {
   cart_keyUp = wasm_runtime_lookup_function(module_inst, "keyUp");
   cart_keyDown = wasm_runtime_lookup_function(module_inst, "keyDown");
 
-  // for some reason load must be called before main
+  wasm_application_execute_main(module_inst, 0, NULL);
 
   if (cart_load != NULL) {
-    if (!wasm_runtime_call_wasm(exec_env, cart_load, 0, NULL)) {
+    if (!wasm_runtime_call_wasm(null0_exec_env, cart_load, 0, NULL)) {
       // not fatal, but this will help with troubleshooting
       printf("load: %s\n", wasm_runtime_get_exception(module_inst));
     }
   }
-
-  wasm_application_execute_main(module_inst, 0, NULL);
 
   return true;
 }
@@ -134,8 +102,12 @@ bool wasm_host_load_wasm (u8* wasmBytes, u32 wasmBytesLen) {
 // called on each frame
 void wasm_host_update() {
   if (cart_update != NULL) {
-    update_args[0] = null0_millis();
-    wasm_runtime_call_wasm(exec_env, cart_update, 2, (uint32_t*)update_args);
+    u64 t = null0_millis();
+    update_args[0] = (u32)t;
+    update_args[1] = (u32)(t >> 32);
+    if (!wasm_runtime_call_wasm(null0_exec_env, cart_update, 2, update_args)) {
+      fprintf(stderr, "update: %s\n", wasm_runtime_get_exception(module_inst));
+    }
   }
 }
 
