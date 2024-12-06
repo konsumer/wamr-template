@@ -1,8 +1,16 @@
-// this is the wamr-only host callbacks
+// this implements the host-specific API utils & callbacks for wamr
 
-#pragma once
-
+#include "host.h"
 #include <time.h>
+
+// get current unix-time in ms
+uint64_t null0_millis() {
+  struct timespec now;
+  timespec_get(&now, TIME_UTC);
+  return now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+
+cvector_vector_type(NativeSymbol) null0_native_symbols = NULL;
 
 static wasm_function_inst_t cart_update = NULL;
 static wasm_function_inst_t cart_unload = NULL;
@@ -14,16 +22,50 @@ static wasm_function_inst_t cart_keyDown = NULL;
 // used to call update
 static uint64_t update_args[1];
 
+// these will be used in callbacks & wasm_host_load_wasm
+static wasm_module_t module;
+static wasm_module_inst_t module_inst;
+static wasm_exec_env_t exec_env;
 
-// get current unix-time in ms
-uint64_t null0_millis() {
-  struct timespec now;
-  timespec_get(&now, TIME_UTC);
-  return now.tv_sec * 1000 + now.tv_nsec / 1000000;
+// implement these memory-helpers for each host
+
+// copy a host-pointer to cart when you already have a cart-pointer
+void copy_to_cart_with_pointer(u32 cartPtr, void* hostPtr, u32 size) {
+  void* cartHostPtr = wasm_runtime_addr_app_to_native(module_inst, (uint64_t)cartPtr);
+  memcpy(cartHostPtr, hostPtr, size);
 }
 
+// copy a host-pointer to cart when you already have a cart-pointer
+void copy_from_cart_with_pointer(void* hostPtr, u32 cartPtr, u32 size) {
+  void* cartHostPtr = wasm_runtime_addr_app_to_native(module_inst, (uint64_t)cartPtr);
+  memcpy(hostPtr, cartHostPtr, size);
+}
+
+// allocate some memory in cart
+u32 cart_malloc(u32 size) {
+  void** p_native_addr = NULL;
+  return (u32)wasm_runtime_module_malloc(module_inst, (u64)size, p_native_addr);
+}
+
+// free some memory in cart
+void cart_free(u32 ptr) {
+  wasm_runtime_module_free(module_inst, (u64)ptr);
+}
+
+
+// get the strlen of a cart-pointer
+u32 cart_strlen(u32 cartPtr) {
+  return strlen(wasm_runtime_addr_app_to_native(module_inst, (uint64_t)cartPtr));
+}
+
+
+// this has the actual cross-host API implementation
+#include "host_api.h"
+
+// implement these callbacks for each host
+
 // called on native wamr/web host to load actual cart bytes expose host-functions to it
-bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
+bool wasm_host_load_wasm (u8* wasmBytes, u32 wasmBytesLen) {
 
   RuntimeInitArgs init_args;
   memset(&init_args, 0, sizeof(RuntimeInitArgs));
@@ -42,8 +84,8 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
     return false;
   }
 
-  uint32_t stack_size = 8092;
-  uint32_t heap_size = 8092;
+  u32 stack_size = 8092;
+  u32 heap_size = 8092;
   char error_buf[128];
 
   error_buf[0] = 0;
@@ -74,7 +116,7 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
   cart_keyUp = wasm_runtime_lookup_function(module_inst, "keyUp");
   cart_keyDown = wasm_runtime_lookup_function(module_inst, "keyDown");
 
-  // for some reason load mustbe called before main
+  // for some reason load must be called before main
 
   if (cart_load != NULL) {
     if (!wasm_runtime_call_wasm(exec_env, cart_load, 0, NULL)) {
@@ -86,11 +128,6 @@ bool wasm_host_load_wasm (unsigned char* wasmBytes, uint32_t wasmBytesLen) {
   wasm_application_execute_main(module_inst, 0, NULL);
 
   return true;
-}
-
-// called when cart is unloaded
-void wasm_host_unload() {
-  // TODO
 }
 
 // called on each frame

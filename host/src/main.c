@@ -1,9 +1,7 @@
-// basic stuff that gets used all over
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
+// host implementations for emscripten/wamr
+
+#define HOST_IMPLEMENTATION
+#include "host.h"
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -12,17 +10,8 @@
 #define sleep(x) usleep((x)*1000)
 #endif
 
-#define CVECTOR_LOGARITHMIC_GROWTH
-#include "cvector.h"
-
-// filesystem utils (used by host)
-#include "fs.h"
-
 // set this to false to stop
 bool keepRunning = true;
-
-// host implementations for emscripten/wamr
-#include "host.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 2) {

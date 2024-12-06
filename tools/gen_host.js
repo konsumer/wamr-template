@@ -5,8 +5,14 @@ import { glob } from 'glob'
 
 const types = YAML.parse(await readFile('api/types.yml', 'utf8'))
 
-const out = [`// Host interface exposed to WAMR and Emscripten
-#pragma once
+const out = [`// This is the host-interface exposed to carts
+
+#ifndef NULL0_HOSTAPI_H
+#define NULL0_HOSTAPI_H
+
+#ifndef EMSCRIPTEN
+cvector_vector_type(NativeSymbol) null0_native_symbols = NULL;
+#endif
 
 `]
 
@@ -112,5 +118,7 @@ for (const f of await glob('api/*.yml')) {
     out.push('})\n')
   }
 }
+
+out.push('#endif // NULL0_HOSTAPI_H')
 
 console.log(out.join('\n'))

@@ -1,7 +1,9 @@
-// Host interface exposed to WAMR and Emscripten
+// This is the host-interface exposed to carts
 
-#pragma once
+#ifndef NULL0_HOSTAPI_H
+#define NULL0_HOSTAPI_H
 
+// use this to debug your bytes
 #include "hexdump.h"
 
 // Used to test passing structs over wasm-barrier
@@ -71,3 +73,6 @@ HOST_FUNCTION(u32, test_struct_out, (), {
   TestPoint result = { .x=1111, .y=2222 };
   return copy_to_cart(&result, sizeof(result));
 })
+
+
+#endif // NULL0_HOSTAPI_H
