@@ -1,6 +1,5 @@
 // host implementations for emscripten/wamr
 
-#define HOST_IMPLEMENTATION
 #include "host.h"
 
 // set this to false to stop

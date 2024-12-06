@@ -1,5 +1,4 @@
-#ifndef NULL0_HEXDUMP_H
-#define NULL0_HEXDUMP_H
+#pragma once
 
 void hexdump(const void* data, size_t size) {
 	char ascii[17];
@@ -29,5 +28,3 @@ void hexdump(const void* data, size_t size) {
 		}
 	}
 }
-
-#endif // NULL0_HEXDUMP_H

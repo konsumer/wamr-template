@@ -1,7 +1,6 @@
 // this implements shared filesystem functions
 
-#ifndef NULL0_FS_H
-#define NULL0_FS_H
+#pragma once
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -329,4 +328,3 @@ PHYSFS_Stat fs_file_info(char* filename) {
 }
 
 #endif // FS_IMPLEMENTATION
-#endif // NULL0_FS_H

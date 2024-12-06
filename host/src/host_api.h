@@ -1,7 +1,6 @@
 // This is the host-interface exposed to carts
 
-#ifndef NULL0_HOSTAPI_H
-#define NULL0_HOSTAPI_H
+#pragma once
 
 // use this to debug your bytes
 #include "hexdump.h"
@@ -74,5 +73,3 @@ HOST_FUNCTION(u32, test_struct_out, (), {
   return copy_to_cart(&result, sizeof(result));
 })
 
-
-#endif // NULL0_HOSTAPI_H

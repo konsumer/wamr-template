@@ -18,7 +18,7 @@ endif()
 # enable colors for ninja
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 # everyone wants to make an "uninstall" target
 set_property(GLOBAL PROPERTY ALLOW_DUPLICATE_CUSTOM_TARGETS 1)

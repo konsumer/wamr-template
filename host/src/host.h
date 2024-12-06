@@ -1,7 +1,6 @@
 // shared definition for different hosts
 
-#ifndef NULL0_HOST_H
-#define NULL0_HOST_H
+#pragma once
 
 // basic stuff that gets used all over
 #include <stdio.h>
@@ -10,9 +9,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef HOST_IMPLEMENTATION
+
 #define FS_IMPLEMENTATION
-#endif
 #include "fs.h"
 
 #define CVECTOR_LOGARITHMIC_GROWTH
@@ -93,20 +91,18 @@ void wasm_host_unload();
 #ifdef EMSCRIPTEN
   #include "emscripten.h"
   #define HOST_FUNCTION(ret_type, name, params, ...) EMSCRIPTEN_KEEPALIVE ret_type host_##name params { __VA_ARGS__ }
+  #include "host_emscripten.h"
 #else
   #include "wasm_c_api.h"
   #include "wasm_export.h"
-
   #define EXPAND_PARAMS(...) , ##__VA_ARGS__
   #define HOST_FUNCTION(ret_type, name, params, ...) \
     ret_type host_##name(wasm_exec_env_t exec_env EXPAND_PARAMS params) { __VA_ARGS__ }; \
     static void __attribute__((constructor)) _register_##name() { \
       cvector_push_back(null0_native_symbols, ((NativeSymbol){ #name, host_##name, NULL })); \
     }
+    #include "host_wamr.h"
 #endif
-
-
-#ifdef HOST_IMPLEMENTATION
 
 // copy a host-pointer to cart, return cart-pointer
 u32 copy_to_cart(void* hostPtr, u32 size) {
@@ -152,8 +148,3 @@ void wasm_host_unload() {
   wasm_host_unload_wasm();
   // TODO: clean up things
 }
-
-#endif // HOST_IMPLEMENTATION
-
-
-#endif // NULL0_HOST_H
