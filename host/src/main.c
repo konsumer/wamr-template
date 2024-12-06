@@ -3,13 +3,6 @@
 #define HOST_IMPLEMENTATION
 #include "host.h"
 
-#ifdef _WINDOWS
-#include <windows.h>
-#else
-#include <unistd.h>
-#define sleep(x) usleep((x)*1000)
-#endif
-
 // set this to false to stop
 bool keepRunning = true;
 

@@ -70,3 +70,7 @@ EM_JS(void, wasm_host_update, (), {
     Module.cart.update(BigInt(Date.now()));
   }
 })
+
+
+// called when cart is unloaded
+void wasm_host_unload_wasm(){}

@@ -137,3 +137,6 @@ void wasm_host_update() {
     wasm_runtime_call_wasm(exec_env, cart_update, 2, (uint32_t*)update_args);
   }
 }
+
+// called when cart is unloaded
+void wasm_host_unload_wasm(){}

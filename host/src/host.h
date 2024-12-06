@@ -29,6 +29,14 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 
+// cross-platform sleep
+#ifdef _WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#define sleep(x) usleep((x)*1000)
+#endif
+
 // HOST
 
 // implement these memory-helpers for each host (in host_(emscripten|wamr).c)
@@ -54,7 +62,7 @@ u32 cart_strlen(u32 cartPtr);
 bool wasm_host_load_wasm (u8* wasmBytesPtr, u32 wasmBytesLen);
 
 // called when cart is unloaded
-void wasm_host_unload();
+void wasm_host_unload_wasm();
 
 // called on each frame
 void wasm_host_update();
@@ -78,7 +86,8 @@ u32 copy_to_cart_string(char* hostString);
 // load file & calls wasm_host_load_wasm
 bool wasm_host_load(char* wasmFilename);
 
-
+// called when cart is unloaded
+void wasm_host_unload();
 
 // macro for single definitions of host functions
 #ifdef EMSCRIPTEN
@@ -140,6 +149,7 @@ bool wasm_host_load(char* wasmFilename) {
 
 // called when cart is unloaded
 void wasm_host_unload() {
+  wasm_host_unload_wasm();
   // TODO: clean up things
 }
 
